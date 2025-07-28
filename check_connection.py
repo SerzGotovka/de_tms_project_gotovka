@@ -2,8 +2,7 @@ import psycopg2
 from clickhouse_driver import Client
 from neo4j import GraphDatabase
 from confluent_kafka.admin import AdminClient, NewTopic
-from minio import Minio
-from minio.error import S3Error
+
 
 # Функция для получения версии PostgreSQL
 def get_postgresql_version(cursor):
@@ -77,16 +76,3 @@ def check_kafka_connection():
 
 check_kafka_connection()
 
-# MinIO
-# def check_minio_version(minio_client):
-#     try:
-#         return minio_client.server_version()
-#     except S3Error as e:
-#         return str(e)
-
-# minio_client = Minio(
-#     "localhost:9001",  
-#     access_key="minio_access_key",
-#     secret_key="minio_secret_key",
-#     secure=False  # используйте True, если используете HTTPS
-# )
