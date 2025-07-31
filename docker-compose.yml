@@ -178,7 +178,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   kafka-ui:
-    image: provectuslabs/kafka-ui:2.35.1
+    image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
     depends_on:
       - kafka
