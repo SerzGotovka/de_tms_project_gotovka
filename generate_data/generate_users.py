@@ -7,9 +7,9 @@ from typing import List, Dict
 fake = Faker()
 
 # Конфигурация начальных данных
-NUM_USERS = 1000  # сколько пользователей сгенерировать
+NUM_USERS = 100  # сколько пользователей сгенерировать
 
-BADGE_NAMES = [
+BADGE_NAMES = (
     "verified",
     "top-contributor",
     "beta-tester",
@@ -17,9 +17,9 @@ BADGE_NAMES = [
     "vip",
     "moderator",
     "donator",
-]
-PRIVACY_LEVELS = ["public", "friends", "private"]
-STATUS_OPTIONS = ["online", "offline"]
+)
+PRIVACY_LEVELS = ("public", "friends", "private")
+STATUS_OPTIONS = ("online", "offline")
 
 
 def gen_user() -> Dict:
@@ -83,22 +83,6 @@ def gen_user_status(user: Dict) -> Dict:
     }
 
 
-def gen_user_badges(user: Dict) -> List[Dict]:
-    """создание структуры user_badges: пользовательские значки (0-N шт.)"""
-    badges = []
-    for badge in random.sample(BADGE_NAMES, random.randint(0, 3)):    #используется для случайного выбора       элементов из последовательности без повторений.
-        badges.append(
-            {
-                "user_id": user["id"],
-                "badge": badge,
-                "awarded_at": fake.date_time_between(
-                    start_date=user["created_at"], end_date="now"
-                ),
-            }
-        )
-    return badges
-
-
 def generate_all() -> Dict[str, List]:
     """Генерирует данные для всех таблиц"""
     users = []
@@ -106,7 +90,6 @@ def generate_all() -> Dict[str, List]:
     settings = []
     privacies = []
     statuses = []
-    badges = []
 
     for _ in range(NUM_USERS):
         user = gen_user()
@@ -117,15 +100,12 @@ def generate_all() -> Dict[str, List]:
         privacies.append(gen_user_privacy(user))
         statuses.append(gen_user_status(user))
 
-        badges.extend(gen_user_badges(user))
-
     return {
         "users": users,
         "user_profiles": profiles,
         "user_settings": settings,
         "user_privacy": privacies,
         "user_status": statuses,
-        "user_badges": badges
     }
 
 
