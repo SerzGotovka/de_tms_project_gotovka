@@ -86,7 +86,7 @@ def gen_user_status(user: Dict) -> Dict:
 def gen_user_badges(user: Dict) -> List[Dict]:
     """создание структуры user_badges: пользовательские значки (0-N шт.)"""
     badges = []
-    for badge in random.sample(BADGE_NAMES, random.randint(0, 3)):
+    for badge in random.sample(BADGE_NAMES, random.randint(0, 3)):    #используется для случайного выбора       элементов из последовательности без повторений.
         badges.append(
             {
                 "user_id": user["id"],
