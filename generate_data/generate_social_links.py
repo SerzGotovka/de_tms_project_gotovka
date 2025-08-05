@@ -3,6 +3,7 @@ import random
 import uuid
 from typing import List, Dict
 from generate_users import gen_user
+import logging
 
 fake = Faker()
 
@@ -31,6 +32,8 @@ def generate_friends(users: List[Dict], max_friends=3) -> List[Dict]:
                     "is_best_friend": random.choice([True, False]),
                 }
             )
+    logging.info(f"Сгенерировано дружеских связей: {len(friends)}")
+    logging.info(friends)
     return friends
 
 
@@ -57,6 +60,8 @@ def generate_followers(users: List[Dict], max_followers=3) -> List[Dict]:
                     "is_active": True,
                 }
             )
+    logging.info(f"Сгенерировано подписчиков: {len(followers)}")
+    logging.info(followers)
     return followers
 
 
@@ -82,6 +87,8 @@ def generate_subscriptions(users: List[Dict], max_subscriptions=3) -> List[Dict]
                     "is_active": True,
                 }
             )
+    logging.info(f"Сгенерировано подписок: {len(subscriptions)}")
+    logging.info(subscriptions)
     return subscriptions
 
 
@@ -111,6 +118,8 @@ def generate_blocks(users: List[Dict], max_blocks=2) -> List[Dict]:
                     "is_active": True,
                 }
             )
+    logging.info(f"Сгенерировано блокировок: {len(blocks)}")
+    logging.info(blocks)
     return blocks
 
 
@@ -140,6 +149,8 @@ def generate_mutes(users: List[Dict], max_mutes=2) -> List[Dict]:
                     "is_active": True,
                 }
             )
+    logging.info(f"Сгенерировано отключенных уведомлений: {len(mutes)}")
+    logging.info(mutes)
     return mutes
 
 
@@ -158,6 +169,8 @@ def generate_close_friends(friends: List[Dict]) -> List[Dict]:
                     "is_active": True,
                 }
             )
+    logging.info(f"Сгенерировано близких друзей: {len(close_friends)}")
+    logging.info(close_friends)
     return close_friends
 
 

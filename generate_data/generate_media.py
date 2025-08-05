@@ -3,6 +3,7 @@ from faker import Faker
 import uuid
 from typing import List, Dict, Any
 from generate_users import gen_user
+import logging
 
 fake = Faker()
 
@@ -23,6 +24,8 @@ def generate_photos(users: List[Dict[str, Any]], num_photos: int = 10) -> List[D
                 "is_private": random.choice([True, False]),
             }
         )
+    logging.info(f"Сгенерировано фото: {len(photos)}")
+    logging.info(photos)
     return photos
 
 
@@ -42,6 +45,8 @@ def generate_videos(users: List[Dict[str, Any]], num_videos: int = 5) -> List[Di
                 "visibility": random.choice(["public", "private", "unlisted"]),
             }
         )
+    logging.info(f"Сгенерировано видео: {len(videos)}")
+    logging.info(videos)
     return videos
 
 
@@ -63,6 +68,8 @@ def generate_albums(users: List[Dict[str, Any]], photos: List[Dict[str, Any]], v
                 "media_ids": selected_photos + selected_videos,  # Список ID медиафайлов
             }
         )
+    logging.info(f"Сгенерировано альбомов: {len(albums)}")
+    logging.info(albums)
     return albums
 
 

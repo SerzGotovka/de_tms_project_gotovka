@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from faker import Faker
 from typing import List, Dict
 from config.config_generate import NUM_USERS, PRIVACY_LEVELS, STATUS_OPTIONS
+import logging
 
 fake = Faker()
 
@@ -21,8 +22,7 @@ def gen_user() -> List[Dict]:
             "updated_at": datetime.now(timezone.utc),
         }
         users.append(user)
-    
-    print(f"Сгенерировано пользователей: {len(users)}")
+    logging.info(f"Сгенерировано пользователей: {len(users)}")
     return users
 
 
@@ -40,8 +40,7 @@ def gen_user_profile(users: List[Dict]) -> List[Dict]:
             "updated_at": datetime.now(timezone.utc),
         }
         profiles.append(profile)
-    
-    print(f"Сгенерировано профилей пользователей: {len(profiles)}")
+    logging.info(f"Сгенерировано профилей пользователей: {len(profiles)}")
     return profiles
 
 
@@ -62,8 +61,7 @@ def gen_user_settings(users: List[Dict]) -> List[Dict]:
             "updated_at": datetime.now(timezone.utc),
         }
         settings.append(setting)
-    
-    print(f"Сгенерировано настроек пользователей: {len(settings)}")
+    logging.info(f"Сгенерировано настроек пользователей: {len(settings)}")
     return settings
 
 
@@ -79,8 +77,7 @@ def gen_user_privacy(users: List[Dict]) -> List[Dict]:
             "updated_at": datetime.now(timezone.utc),
         }
         privacies.append(privacy)
-    
-    print(f"Сгенерировано настроек приватности: {len(privacies)}")
+    logging.info(f"Сгенерировано настроек приватности: {len(privacies)}")
     return privacies
 
 
@@ -94,8 +91,7 @@ def gen_user_status(users: List[Dict]) -> List[Dict]:
             "last_seen_at": fake.date_time_between(start_date="-3h", end_date="now"),
         }
         statuses.append(status)
-    
-    print(f"Сгенерировано статусов пользователей: {len(statuses)}")
+    logging.info(f"Сгенерировано статусов пользователей: {len(statuses)}")
     return statuses
 
 
@@ -115,9 +111,9 @@ if __name__ == "__main__":
     # Генерируем статусы для пользователей
     statuses = gen_user_status(users)
     
-    print("\nИтоговая статистика:")
-    print(f"  users: {len(users)} строк")
-    print(f"  user_profiles: {len(profiles)} строк")
-    print(f"  user_settings: {len(settings)} строк")
-    print(f"  user_privacy: {len(privacies)} строк")
-    print(f"  user_status: {len(statuses)} строк")
+    logging.info("\nИтоговая статистика:")
+    logging.info(f"  users: {len(users)} строк")
+    logging.info(f"  user_profiles: {len(profiles)} строк")
+    logging.info(f"  user_settings: {len(settings)} строк")
+    logging.info(f"  user_privacy: {len(privacies)} строк")
+    logging.info(f"  user_status: {len(statuses)} строк")

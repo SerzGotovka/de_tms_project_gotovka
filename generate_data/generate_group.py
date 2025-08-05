@@ -5,6 +5,7 @@ import uuid
 from typing import List, Dict
 from generate_users import gen_user
 from config.config_generate import NUM_COMMUNITIES, NUM_GROUPS, MAX_MEMBERS_PER_GROUP
+import logging
 
 fake = Faker()
 
@@ -24,6 +25,8 @@ def generate_communities(n=NUM_COMMUNITIES) -> List[Dict]:
             "member_count": random.randint(100, 10000),
         }
         communities.append(record)
+    logging.info(f"Сгенерировано сообществ: {len(communities)}")
+    logging.info(communities)
     return communities
 
 
@@ -43,6 +46,8 @@ def generate_groups(user_ids: List[str], n=NUM_GROUPS) -> List[Dict]:
             ).strftime("%Y.%m.%d %H:%M"),
         }
         groups.append(record)
+    logging.info(f"Сгенерировано групп: {len(groups)}")
+    logging.info(groups)
     return groups
 
 
@@ -66,6 +71,8 @@ def generate_group_members(group_ids: List[str], user_ids: List[str], n=MAX_MEMB
                     "role": random.choice(["member", "moderator", "admin"]),
                 }
             )
+    logging.info(f"Сгенерировано участников групп: {len(members)}")
+    logging.info(members)
     return members
 
 
@@ -86,6 +93,8 @@ def generate_community_topics(communities: List[Dict], n=3) -> List[Dict]:
                     ).strftime("%Y.%m.%d %H:%M"),
                 }
             )
+    logging.info(f"Сгенерировано тем для сообществ: {len(topics)}")
+    logging.info(topics)
     return topics
 
 
@@ -122,6 +131,8 @@ def generate_pinned_posts(
                 ).strftime("%Y.%m.%d %H:%M"),
             }
         )
+    logging.info(f"Сгенерировано закрепленных постов: {len(pinned_posts)}")
+    logging.info(pinned_posts)
     return pinned_posts
 
 
