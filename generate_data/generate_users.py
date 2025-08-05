@@ -1,13 +1,13 @@
-import uuid
 import random
+import uuid
 from datetime import datetime, timedelta, timezone
 from faker import Faker
 from typing import List, Dict
 
 fake = Faker()
 
-# Конфигурация начальных данных
-NUM_USERS = 100  # сколько пользователей сгенерировать
+# # Настройки
+NUM_USERS = 100  # Количество пользователей
 
 BADGE_NAMES = (
     "verified",
@@ -20,6 +20,7 @@ BADGE_NAMES = (
 )
 PRIVACY_LEVELS = ("public", "friends", "private")
 STATUS_OPTIONS = ("online", "offline")
+
 
 
 def gen_user() -> List[Dict]:
