@@ -4,14 +4,10 @@ import random
 import uuid
 from typing import List, Dict
 from generate_users import gen_user
-
+from config.config_generate import NUM_COMMUNITIES, NUM_GROUPS, MAX_MEMBERS_PER_GROUP
 
 fake = Faker()
 
-NUM_COMMUNITIES = 5
-NUM_GROUPS = 8
-MAX_MEMBERS_PER_GROUP = 20
-REACTION_TYPES = ("like", "love", "haha", "wow", "sad", "angry")
 
 
 def generate_communities(n=NUM_COMMUNITIES) -> List[Dict]:

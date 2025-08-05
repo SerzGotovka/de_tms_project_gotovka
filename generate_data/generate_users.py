@@ -3,24 +3,9 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from faker import Faker
 from typing import List, Dict
+from config.config_generate import NUM_USERS, PRIVACY_LEVELS, STATUS_OPTIONS
 
 fake = Faker()
-
-# # Настройки
-NUM_USERS = 100  # Количество пользователей
-
-BADGE_NAMES = (
-    "verified",
-    "top-contributor",
-    "beta-tester",
-    "early-adopter",
-    "vip",
-    "moderator",
-    "donator",
-)
-PRIVACY_LEVELS = ("public", "friends", "private")
-STATUS_OPTIONS = ("online", "offline")
-
 
 
 def gen_user() -> List[Dict]:

@@ -3,11 +3,12 @@ from faker import Faker
 from datetime import datetime, timedelta
 from typing import List, Dict
 from generate_users import gen_user
+from config.config_generate import REACTION_TYPES
 
 fake = Faker()
 
-# Типы реакций
-REACTION_TYPES = ('like', 'love', 'haha', 'wow', 'sad', 'angry')
+
+
 
 def generate_posts(user_ids: List[str], n=5) -> List[Dict]:
     """Генерация постов"""
