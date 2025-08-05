@@ -7,8 +7,9 @@ from generate_users import gen_user
 fake = Faker()
 
 
-# Генерация дружеских связей
+
 def generate_friends(users: List[Dict], max_friends=3) -> List[Dict]:
+    """Генерация дружеских связей"""
     friends = []
     for user in users:
         num_friends = random.randint(0, max_friends)
@@ -33,8 +34,9 @@ def generate_friends(users: List[Dict], max_friends=3) -> List[Dict]:
     return friends
 
 
-# Генерация подписчиков
+
 def generate_followers(users: List[Dict], max_followers=3) -> List[Dict]:
+    """Генерация подписчиков"""
     followers = []
     for user in users:
         num_followers = random.randint(0, max_followers)
@@ -83,8 +85,9 @@ def generate_subscriptions(users: List[Dict], max_subscriptions=3) -> List[Dict]
     return subscriptions
 
 
-# Генерация блокировок
+
 def generate_blocks(users: List[Dict], max_blocks=2) -> List[Dict]:
+    """Генерация блокировок"""
     blocks = []
     for user in users:
         num_blocks = random.randint(0, max_blocks)
@@ -111,8 +114,9 @@ def generate_blocks(users: List[Dict], max_blocks=2) -> List[Dict]:
     return blocks
 
 
-# Генерация отключенных уведомлений (mutes)
+
 def generate_mutes(users: List[Dict], max_mutes=2) -> List[Dict]:
+    """Генерация отключенных уведомлений (mutes)"""
     mutes = []
     for user in users:
         num_mutes = random.randint(0, max_mutes)
@@ -139,8 +143,9 @@ def generate_mutes(users: List[Dict], max_mutes=2) -> List[Dict]:
     return mutes
 
 
-# Генерация близких друзей (close friends)
+
 def generate_close_friends(friends: List[Dict]) -> List[Dict]:
+    """Генерация близких друзей (close friends)"""
     close_friends = []
     for friend in friends:
         if friend["is_best_friend"]:

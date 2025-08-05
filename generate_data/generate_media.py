@@ -6,8 +6,9 @@ from generate_users import gen_user
 
 fake = Faker()
 
-# 2. Генерация фото
+
 def generate_photos(users: List[Dict[str, Any]], num_photos: int = 10) -> List[Dict[str, Any]]:
+    """Генерация фото"""
     photos = []
     for _ in range(num_photos):
         user = random.choice(users)
@@ -24,8 +25,9 @@ def generate_photos(users: List[Dict[str, Any]], num_photos: int = 10) -> List[D
         )
     return photos
 
-# 3. Генерация видео
+
 def generate_videos(users: List[Dict[str, Any]], num_videos: int = 5) -> List[Dict[str, Any]]:
+    """Генерация видео"""
     videos = []
     for _ in range(num_videos):
         user = random.choice(users)
@@ -42,8 +44,9 @@ def generate_videos(users: List[Dict[str, Any]], num_videos: int = 5) -> List[Di
         )
     return videos
 
-# 4. Генерация альбомов
+
 def generate_albums(users: List[Dict[str, Any]], photos: List[Dict[str, Any]], videos: List[Dict[str, Any]], num_albums: int = 3) -> List[Dict[str, Any]]:
+    """Генерация альбомов"""
     albums = []
     for _ in range(num_albums):
         user = random.choice(users)

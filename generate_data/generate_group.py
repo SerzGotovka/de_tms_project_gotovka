@@ -14,7 +14,6 @@ MAX_MEMBERS_PER_GROUP = 20
 REACTION_TYPES = ("like", "love", "haha", "wow", "sad", "angry")
 
 
-# Генерация сообществ
 def generate_communities(n=NUM_COMMUNITIES) -> List[Dict]:
     """Генерация сообществ"""
     communities = []
@@ -32,7 +31,7 @@ def generate_communities(n=NUM_COMMUNITIES) -> List[Dict]:
     return communities
 
 
-# Генерация групп
+
 def generate_groups(user_ids: List[str], n=NUM_GROUPS) -> List[Dict]:
     """Генерация групп с владельцами"""
     groups = []
@@ -51,7 +50,7 @@ def generate_groups(user_ids: List[str], n=NUM_GROUPS) -> List[Dict]:
     return groups
 
 
-# Генерация участников групп
+
 def generate_group_members(group_ids: List[str], user_ids: List[str], n=MAX_MEMBERS_PER_GROUP) -> List[Dict]:
     """Генерация участников групп"""
     members = []
@@ -74,7 +73,7 @@ def generate_group_members(group_ids: List[str], user_ids: List[str], n=MAX_MEMB
     return members
 
 
-# Генерация тем сообщества
+
 def generate_community_topics(communities: List[Dict], n=3) -> List[Dict]:
     """Генерация тем для сообществ"""
     topics = []
@@ -94,7 +93,7 @@ def generate_community_topics(communities: List[Dict], n=3) -> List[Dict]:
     return topics
 
 
-# Генерация закрепленных постов
+
 def generate_pinned_posts(
     communities: List[Dict], groups: List[Dict], user_ids: List[str], n=5) -> List[Dict]:
     """Генерация закрепленных постов"""
@@ -130,7 +129,7 @@ def generate_pinned_posts(
     return pinned_posts
 
 
-# Финальная генерация всех данных
+
 def generate_all_group_data():
     user_ids = gen_user()
 

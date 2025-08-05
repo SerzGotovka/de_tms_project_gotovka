@@ -7,10 +7,10 @@ from generate_users import gen_user
 fake = Faker()
 
 # Типы реакций
-REACTION_TYPES = ['like', 'love', 'haha', 'wow', 'sad', 'angry']
+REACTION_TYPES = ('like', 'love', 'haha', 'wow', 'sad', 'angry')
 
-# Генерация постов
 def generate_posts(user_ids: List[str], n=5) -> List[Dict]:
+    """Генерация постов"""
     posts = []
     for i in range(n):
         posts.append({
@@ -23,8 +23,8 @@ def generate_posts(user_ids: List[str], n=5) -> List[Dict]:
         })
     return posts
 
-# Генерация историй
 def generate_stories(user_ids: List[str], n=5) -> List[Dict]:
+    """Генерация историй"""
     stories = []
     for i in range(n):
         stories.append({
@@ -36,8 +36,8 @@ def generate_stories(user_ids: List[str], n=5) -> List[Dict]:
         })
     return stories
 
-# Генерация Reels
 def generate_reels(user_ids: List[str], n=5) -> List[Dict]:
+    """Генерация Reels"""
     reels = []
     for i in range(n):
         reels.append({
@@ -50,8 +50,8 @@ def generate_reels(user_ids: List[str], n=5) -> List[Dict]:
         })
     return reels
 
-# Генерация комментариев
 def generate_comments(user_ids: List[str], posts: List[Dict], n=10) -> List[Dict]:
+    """Генерация комментариев"""
     comments = []
     for i in range(n):
         comments.append({
@@ -63,8 +63,8 @@ def generate_comments(user_ids: List[str], posts: List[Dict], n=10) -> List[Dict
         })
     return comments
 
-# Генерация ответов на комментарии
 def generate_replies(user_ids: List[str], comments: List[Dict], n=10) -> List[Dict]:
+    """Генерация ответов на комментарии"""
     replies = []
     for i in range(n):
         comment = random.choice(comments)
@@ -77,8 +77,8 @@ def generate_replies(user_ids: List[str], comments: List[Dict], n=10) -> List[Di
         })
     return replies
 
-# Генерация лайков
 def generate_likes(user_ids: List[str], posts: List[Dict], n=20) -> List[Dict]:
+    """Генерация лайков"""
     likes = []
     for i in range(n):
         post = random.choice(posts)
@@ -90,8 +90,8 @@ def generate_likes(user_ids: List[str], posts: List[Dict], n=20) -> List[Dict]:
         })
     return likes
 
-# Генерация реакций
 def generate_reactions(user_ids: List[str], posts: List[Dict], n=15) -> List[Dict]:
+    """Генерация реакций"""
     reactions = []
     for i in range(n):
         post = random.choice(posts)
@@ -104,8 +104,8 @@ def generate_reactions(user_ids: List[str], posts: List[Dict], n=15) -> List[Dic
         })
     return reactions
 
-# Генерация репостов
 def generate_shares(user_ids: List[str], posts: List[Dict], n=10) -> List[Dict]:
+    """Генерация репостов"""
     shares = []
     for i in range(n):
         post = random.choice(posts)
@@ -117,9 +117,8 @@ def generate_shares(user_ids: List[str], posts: List[Dict], n=10) -> List[Dict]:
         })
     return shares
 
-# Финальная генерация всех данных
 def generate_all_data() -> Dict[str, List[Dict]]:
-    
+    """Финальная генерация всех данных"""
     users = gen_user()
     user_ids = [user['id'] for user in users]
 
