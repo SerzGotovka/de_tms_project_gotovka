@@ -1,8 +1,14 @@
 import random
+import sys
+import os
 from faker import Faker
 import uuid
 from typing import List, Dict, Any
-from generate_users import gen_user
+
+# Добавляем путь к корневой директории проекта
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from generate_data.generate_users import gen_user
 import logging
 
 fake = Faker()

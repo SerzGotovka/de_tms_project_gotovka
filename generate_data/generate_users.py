@@ -1,14 +1,21 @@
+from airflow.decorators import task
+import logging
 import random
 import uuid
-from datetime import datetime, timedelta, timezone
+import sys
+import os
+from datetime import datetime, timezone
 from faker import Faker
 from typing import List, Dict
+
+# Добавляем путь к корневой директории проекта
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from config.config_generate import NUM_USERS, PRIVACY_LEVELS, STATUS_OPTIONS
-import logging
 
 fake = Faker()
 
-
+@task()
 def gen_user() -> List[Dict]:
     """создание структуры user и добавление данных"""
     users = []
@@ -25,7 +32,7 @@ def gen_user() -> List[Dict]:
     logging.info(f"Сгенерировано пользователей: {len(users)}")
     return users
 
-
+@task()
 def gen_user_profile(users: List[Dict]) -> List[Dict]:
     """создание структуры user_profiles и добавление данных"""
     profiles = []
@@ -43,7 +50,7 @@ def gen_user_profile(users: List[Dict]) -> List[Dict]:
     logging.info(f"Сгенерировано профилей пользователей: {len(profiles)}")
     return profiles
 
-
+@task()
 def gen_user_settings(users: List[Dict]) -> List[Dict]:
     """создание структуры user_settings и добавление данных"""
     settings = []
@@ -64,7 +71,7 @@ def gen_user_settings(users: List[Dict]) -> List[Dict]:
     logging.info(f"Сгенерировано настроек пользователей: {len(settings)}")
     return settings
 
-
+@task()
 def gen_user_privacy(users: List[Dict]) -> List[Dict]:
     """создание структуры user_privacy и добавление данных"""
     privacies = []
@@ -80,7 +87,7 @@ def gen_user_privacy(users: List[Dict]) -> List[Dict]:
     logging.info(f"Сгенерировано настроек приватности: {len(privacies)}")
     return privacies
 
-
+@task()
 def gen_user_status(users: List[Dict]) -> List[Dict]:
     """создание структуры user_status и добавление данных"""
     statuses = []
@@ -95,25 +102,25 @@ def gen_user_status(users: List[Dict]) -> List[Dict]:
     return statuses
 
 
-if __name__ == "__main__":
-    # Генерируем пользователей
-    users = gen_user()
+# if __name__ == "__main__":
+#     # Генерируем пользователей
+#     users = gen_user()
     
-    # Генерируем профили для пользователей
-    profiles = gen_user_profile(users)
+#     # Генерируем профили для пользователей
+#     profiles = gen_user_profile(users)
     
-    # Генерируем настройки для пользователей
-    settings = gen_user_settings(users)
+#     # Генерируем настройки для пользователей
+#     settings = gen_user_settings(users)
     
-    # Генерируем настройки приватности для пользователей
-    privacies = gen_user_privacy(users)
+#     # Генерируем настройки приватности для пользователей
+#     privacies = gen_user_privacy(users)
     
-    # Генерируем статусы для пользователей
-    statuses = gen_user_status(users)
+#     # Генерируем статусы для пользователей
+#     statuses = gen_user_status(users)
     
-    logging.info("\nИтоговая статистика:")
-    logging.info(f"  users: {len(users)} строк")
-    logging.info(f"  user_profiles: {len(profiles)} строк")
-    logging.info(f"  user_settings: {len(settings)} строк")
-    logging.info(f"  user_privacy: {len(privacies)} строк")
-    logging.info(f"  user_status: {len(statuses)} строк")
+#     logging.info("\nИтоговая статистика:")
+#     logging.info(f"  users: {len(users)} строк")
+#     logging.info(f"  user_profiles: {len(profiles)} строк")
+#     logging.info(f"  user_settings: {len(settings)} строк")
+#     logging.info(f"  user_privacy: {len(privacies)} строк")
+#     logging.info(f"  user_status: {len(statuses)} строк")

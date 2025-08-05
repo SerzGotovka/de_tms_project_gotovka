@@ -2,8 +2,14 @@ from faker import Faker
 from datetime import datetime, timedelta
 import random
 import uuid
+import sys
+import os
 from typing import List, Dict
-from generate_users import gen_user
+
+# Добавляем путь к корневой директории проекта
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from generate_data.generate_users import gen_user
 from config.config_generate import NUM_COMMUNITIES, NUM_GROUPS, MAX_MEMBERS_PER_GROUP
 import logging
 
