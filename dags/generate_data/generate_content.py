@@ -1,15 +1,10 @@
 import random
-import sys
-import os
+
 from faker import Faker
 from datetime import datetime, timedelta
 from typing import List, Dict
-
-# Добавляем путь к корневой директории проекта
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from generate_data.generate_users import gen_user
-from config.config_generate import REACTION_TYPES
+from utils.config_generate import REACTION_TYPES
 import logging
 
 fake = Faker()
@@ -33,6 +28,7 @@ def generate_posts(user_ids: List[str], n=5) -> List[Dict]:
     logging.info(posts)
     return posts
 
+
 def generate_stories(user_ids: List[str], n=5) -> List[Dict]:
     """Генерация историй"""
     stories = []
@@ -47,6 +43,7 @@ def generate_stories(user_ids: List[str], n=5) -> List[Dict]:
     logging.info(f"Сгенерировано историй: {len(stories)}")
     logging.info(stories)
     return stories
+
 
 def generate_reels(user_ids: List[str], n=5) -> List[Dict]:
     """Генерация Reels"""
@@ -64,6 +61,7 @@ def generate_reels(user_ids: List[str], n=5) -> List[Dict]:
     logging.info(reels)
     return reels
 
+
 def generate_comments(user_ids: List[str], posts: List[Dict], n=10) -> List[Dict]:
     """Генерация комментариев"""
     comments = []
@@ -78,6 +76,7 @@ def generate_comments(user_ids: List[str], posts: List[Dict], n=10) -> List[Dict
     logging.info(f"Сгенерировано комментариев: {len(comments)}")
     logging.info(comments)
     return comments
+
 
 def generate_replies(user_ids: List[str], comments: List[Dict], n=10) -> List[Dict]:
     """Генерация ответов на комментарии"""
@@ -95,6 +94,7 @@ def generate_replies(user_ids: List[str], comments: List[Dict], n=10) -> List[Di
     logging.info(replies)
     return replies
 
+
 def generate_likes(user_ids: List[str], posts: List[Dict], n=20) -> List[Dict]:
     """Генерация лайков"""
     likes = []
@@ -109,6 +109,7 @@ def generate_likes(user_ids: List[str], posts: List[Dict], n=20) -> List[Dict]:
     logging.info(f"Сгенерировано лайков: {len(likes)}")
     logging.info(likes)
     return likes
+
 
 def generate_reactions(user_ids: List[str], posts: List[Dict], n=15) -> List[Dict]:
     """Генерация реакций"""
@@ -126,6 +127,7 @@ def generate_reactions(user_ids: List[str], posts: List[Dict], n=15) -> List[Dic
     logging.info(reactions)
     return reactions
 
+
 def generate_shares(user_ids: List[str], posts: List[Dict], n=10) -> List[Dict]:
     """Генерация репостов"""
     shares = []
@@ -140,6 +142,7 @@ def generate_shares(user_ids: List[str], posts: List[Dict], n=10) -> List[Dict]:
     logging.info(f"Сгенерировано репостов: {len(shares)}")  
     logging.info(shares)
     return shares
+
 
 def generate_all_data() -> Dict[str, List[Dict]]:
     """Финальная генерация всех данных"""

@@ -1,13 +1,8 @@
 from faker import Faker
 import random
 import uuid
-import sys
-import os
+
 from typing import List, Dict
-
-# Добавляем путь к корневой директории проекта
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from generate_data.generate_users import gen_user
 import logging
 
@@ -71,8 +66,9 @@ def generate_followers(users: List[Dict], max_followers=3) -> List[Dict]:
     return followers
 
 
-# Генерация подписок
+
 def generate_subscriptions(users: List[Dict], max_subscriptions=3) -> List[Dict]:
+    """Генерация подписок"""
     subscriptions = []
     for user in users:
         num_subs = random.randint(0, max_subscriptions)
@@ -184,10 +180,10 @@ def generate_close_friends(friends: List[Dict]) -> List[Dict]:
 # Генерация пользователей
 users = gen_user()
 
-# Генерация социальных связей
-friends = generate_friends(users)
-followers = generate_followers(users)
-subscriptions = generate_subscriptions(users)
-blocks = generate_blocks(users)
-mutes = generate_mutes(users)
-close_friends = generate_close_friends(friends)
+# # Генерация социальных связей
+# friends = generate_friends(users)
+# followers = generate_followers(users)
+# subscriptions = generate_subscriptions(users)
+# blocks = generate_blocks(users)
+# mutes = generate_mutes(users)
+# close_friends = generate_close_friends(friends)

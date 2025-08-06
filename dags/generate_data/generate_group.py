@@ -2,15 +2,9 @@ from faker import Faker
 from datetime import datetime, timedelta
 import random
 import uuid
-import sys
-import os
 from typing import List, Dict
-
-# Добавляем путь к корневой директории проекта
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from generate_data.generate_users import gen_user
-from config.config_generate import NUM_COMMUNITIES, NUM_GROUPS, MAX_MEMBERS_PER_GROUP
+from utils.config_generate import NUM_COMMUNITIES, NUM_GROUPS, MAX_MEMBERS_PER_GROUP
 import logging
 
 fake = Faker()
@@ -55,7 +49,6 @@ def generate_groups(user_ids: List[str], n=NUM_GROUPS) -> List[Dict]:
     logging.info(f"Сгенерировано групп: {len(groups)}")
     logging.info(groups)
     return groups
-
 
 
 def generate_group_members(group_ids: List[str], user_ids: List[str], n=MAX_MEMBERS_PER_GROUP) -> List[Dict]:

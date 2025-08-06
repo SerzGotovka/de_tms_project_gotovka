@@ -1,4 +1,4 @@
-from airflow.decorators import task
+
 import logging
 import random
 import uuid
@@ -7,15 +7,11 @@ import os
 from datetime import datetime, timezone
 from faker import Faker
 from typing import List, Dict
-
-# Добавляем путь к корневой директории проекта
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from config.config_generate import NUM_USERS, PRIVACY_LEVELS, STATUS_OPTIONS
+from utils.config_generate import NUM_USERS, PRIVACY_LEVELS, STATUS_OPTIONS
 
 fake = Faker()
 
-@task()
+
 def gen_user() -> List[Dict]:
     """создание структуры user и добавление данных"""
     users = []
@@ -30,9 +26,10 @@ def gen_user() -> List[Dict]:
         }
         users.append(user)
     logging.info(f"Сгенерировано пользователей: {len(users)}")
+    logging.info(users)
     return users
 
-@task()
+
 def gen_user_profile(users: List[Dict]) -> List[Dict]:
     """создание структуры user_profiles и добавление данных"""
     profiles = []
@@ -48,9 +45,10 @@ def gen_user_profile(users: List[Dict]) -> List[Dict]:
         }
         profiles.append(profile)
     logging.info(f"Сгенерировано профилей пользователей: {len(profiles)}")
+    logging.info(profiles)
     return profiles
 
-@task()
+
 def gen_user_settings(users: List[Dict]) -> List[Dict]:
     """создание структуры user_settings и добавление данных"""
     settings = []
@@ -69,9 +67,10 @@ def gen_user_settings(users: List[Dict]) -> List[Dict]:
         }
         settings.append(setting)
     logging.info(f"Сгенерировано настроек пользователей: {len(settings)}")
+    logging.info(settings)
     return settings
 
-@task()
+
 def gen_user_privacy(users: List[Dict]) -> List[Dict]:
     """создание структуры user_privacy и добавление данных"""
     privacies = []
@@ -85,9 +84,9 @@ def gen_user_privacy(users: List[Dict]) -> List[Dict]:
         }
         privacies.append(privacy)
     logging.info(f"Сгенерировано настроек приватности: {len(privacies)}")
+    logging.info(privacies)
     return privacies
 
-@task()
 def gen_user_status(users: List[Dict]) -> List[Dict]:
     """создание структуры user_status и добавление данных"""
     statuses = []
@@ -99,6 +98,7 @@ def gen_user_status(users: List[Dict]) -> List[Dict]:
         }
         statuses.append(status)
     logging.info(f"Сгенерировано статусов пользователей: {len(statuses)}")
+    logging.info(statuses)
     return statuses
 
 

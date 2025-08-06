@@ -1,17 +1,14 @@
+
 import random
-import sys
-import os
 from faker import Faker
 import uuid
 from typing import List, Dict, Any
-
-# Добавляем путь к корневой директории проекта
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from generate_data.generate_users import gen_user
 import logging
 
 fake = Faker()
+
+users = gen_user()
 
 
 def generate_photos(users: List[Dict[str, Any]], num_photos: int = 10) -> List[Dict[str, Any]]:
@@ -78,13 +75,19 @@ def generate_albums(users: List[Dict[str, Any]], photos: List[Dict[str, Any]], v
     logging.info(albums)
     return albums
 
+def generate_all_media(users):
+    # Генерация пользователей
+    users = gen_user()
 
-# Генерация пользователей
-users = gen_user()
+    # Генерация медиа
+    photos = generate_photos(users, num_photos=10)
+    videos = generate_videos(users, num_videos=5)
+    albums = generate_albums(users, photos, videos, num_albums=3)
 
-# Генерация медиа
-photos = generate_photos(users, num_photos=10)
-videos = generate_videos(users, num_videos=5)
-albums = generate_albums(users, photos, videos, num_albums=3)
+    return {
+        'photos': photos,
+        'videos': videos,
+        'albums': albums
+    }
 
 #
