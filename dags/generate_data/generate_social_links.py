@@ -177,8 +177,8 @@ def generate_close_friends(friends: List[Dict]) -> List[Dict]:
 
 
 
-# Генерация пользователей
-users = gen_user()
+# # Генерация пользователей
+# users = gen_user()
 
 # # Генерация социальных связей
 # friends = generate_friends(users)

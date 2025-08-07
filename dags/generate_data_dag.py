@@ -1,5 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.utils.task_group import TaskGroup
 from datetime import datetime
 import logging
 from generate_data.generate_social_links import generate_blocks, generate_close_friends, generate_followers, generate_friends, generate_mutes, generate_subscriptions
@@ -11,16 +12,9 @@ from generate_data.generate_users import gen_user, gen_user_profile, gen_user_se
 
 logger = logging.getLogger(__name__)
 
-default_args = {
-    "owner": "serzik gotovka",
-    "start_date": datetime(2024, 1, 1),
-    "retries": 1,
-}
-
 with DAG(
     dag_id='generate_data',
-    default_args=default_args,
-    start_date=datetime(2025, 8, 4),
+    start_date=None,#datetime(2025, 8, 4),
     schedule_interval=None,
     tags=['generate'],
     description='Даг для генерации всех данных',
@@ -278,14 +272,12 @@ with DAG(
     )
 
     # ---------- Зависимости ----------
-    gen_users_task >> [
+    gen_users_task >> gen_groups_task >> gen_photos_task >> gen_videos_task >> gen_friends_task >> gen_communities_task >> [
         gen_profiles_task,
         gen_settings_task,
         gen_privacy_task,
         gen_status_task,
-        gen_communities_task,
-        gen_groups_task
+        gen_members_task, gen_topics_task, gen_pinned_posts_task, gen_content_task, gen_albums_task, gen_followers_task, gen_subscriptions_task, gen_blocks_task, gen_mutes_task, gen_close_friends_task]
+    
 
-        
-    ] >> gen_members_task >> gen_topics_task >> gen_pinned_posts_task >> gen_content_task >> gen_photos_task >> gen_videos_task >> gen_albums_task >>  gen_friends_task >> gen_followers_task >> gen_subscriptions_task >> gen_blocks_task >> gen_mutes_task >> gen_close_friends_task
 

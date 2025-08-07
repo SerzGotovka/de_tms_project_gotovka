@@ -1,10 +1,11 @@
-
+import pandas as pd
 import logging
 import random
 import uuid
 import sys
 import os
 from datetime import datetime, timezone
+from utils.function import save_csv_file
 from faker import Faker
 from typing import List, Dict
 from utils.config_generate import NUM_USERS, PRIVACY_LEVELS, STATUS_OPTIONS
@@ -12,7 +13,7 @@ from utils.config_generate import NUM_USERS, PRIVACY_LEVELS, STATUS_OPTIONS
 fake = Faker()
 
 
-def gen_user() -> List[Dict]:
+def gen_user(**kwargs) -> List[Dict]:
     """создание структуры user и добавление данных"""
     users = []
     for _ in range(NUM_USERS):
@@ -27,6 +28,11 @@ def gen_user() -> List[Dict]:
         users.append(user)
     logging.info(f"Сгенерировано пользователей: {len(users)}")
     logging.info(users)
+
+
+    temp_file_path = f'/opt/airflow/dags/save_data/users/data_users_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.csv'
+    save_csv_file(temp_file_path, users)
+
     return users
 
 
@@ -46,6 +52,10 @@ def gen_user_profile(users: List[Dict]) -> List[Dict]:
         profiles.append(profile)
     logging.info(f"Сгенерировано профилей пользователей: {len(profiles)}")
     logging.info(profiles)
+
+    temp_file_path = f'/opt/airflow/dags/save_data/users/data_users_profiles_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.csv'
+    save_csv_file(temp_file_path, profiles)
+
     return profiles
 
 
@@ -68,6 +78,10 @@ def gen_user_settings(users: List[Dict]) -> List[Dict]:
         settings.append(setting)
     logging.info(f"Сгенерировано настроек пользователей: {len(settings)}")
     logging.info(settings)
+
+    temp_file_path = f'/opt/airflow/dags/save_data/users/data_users_settings_{datetime.now().strftime("%Y%m%d%H%M%S")}.csv'
+    save_csv_file(temp_file_path, settings)
+
     return settings
 
 
@@ -85,6 +99,10 @@ def gen_user_privacy(users: List[Dict]) -> List[Dict]:
         privacies.append(privacy)
     logging.info(f"Сгенерировано настроек приватности: {len(privacies)}")
     logging.info(privacies)
+
+    temp_file_path = f'/opt/airflow/dags/save_data/users/data_users_privacies_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.csv'
+    save_csv_file(temp_file_path, privacies)
+
     return privacies
 
 def gen_user_status(users: List[Dict]) -> List[Dict]:
@@ -99,6 +117,10 @@ def gen_user_status(users: List[Dict]) -> List[Dict]:
         statuses.append(status)
     logging.info(f"Сгенерировано статусов пользователей: {len(statuses)}")
     logging.info(statuses)
+
+    temp_file_path = f'/opt/airflow/dags/save_data/users/data_users_status_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.csv'
+    save_csv_file(temp_file_path, statuses)
+
     return statuses
 
 

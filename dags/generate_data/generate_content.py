@@ -144,9 +144,8 @@ def generate_shares(user_ids: List[str], posts: List[Dict], n=10) -> List[Dict]:
     return shares
 
 
-def generate_all_data() -> Dict[str, List[Dict]]:
+def generate_all_data(users: List[Dict]) -> Dict[str, List[Dict]]:
     """Финальная генерация всех данных"""
-    users = gen_user()
     user_ids = [user['id'] for user in users]
 
     
@@ -173,7 +172,8 @@ def generate_all_data() -> Dict[str, List[Dict]]:
 
 # # Пример использования
 # if __name__ == "__main__":
-#     data = generate_all_data()  # <-- В data НЕТ информации о пользователях
+#     users = gen_user()
+#     data = generate_all_data(users)  # <-- В data НЕТ информации о пользователях
 
 #     # Вывод первых 2 записей каждого типа
 #     for key, value in data.items():

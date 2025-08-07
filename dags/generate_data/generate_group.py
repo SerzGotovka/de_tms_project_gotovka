@@ -10,7 +10,7 @@ import logging
 fake = Faker()
 
 
-
+    
 def generate_communities(n=NUM_COMMUNITIES) -> List[Dict]:
     """Генерация сообществ"""
     communities = []
@@ -136,8 +136,8 @@ def generate_pinned_posts(
 
 
 
-def generate_all_group_data():
-    user_ids = gen_user()
+def generate_all_group_data(users: List[Dict]):
+    user_ids = [user['id'] for user in users]
 
     # Генерация сообществ
     communities = generate_communities()

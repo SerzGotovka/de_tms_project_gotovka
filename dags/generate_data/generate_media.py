@@ -8,8 +8,6 @@ import logging
 
 fake = Faker()
 
-users = gen_user()
-
 
 def generate_photos(users: List[Dict[str, Any]], num_photos: int = 10) -> List[Dict[str, Any]]:
     """Генерация фото"""
@@ -76,9 +74,6 @@ def generate_albums(users: List[Dict[str, Any]], photos: List[Dict[str, Any]], v
     return albums
 
 def generate_all_media(users):
-    # Генерация пользователей
-    users = gen_user()
-
     # Генерация медиа
     photos = generate_photos(users, num_photos=10)
     videos = generate_videos(users, num_videos=5)
