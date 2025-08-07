@@ -1,10 +1,4 @@
-from airflow import DAG
-from airflow.operators.python import PythonOperator
-from airflow.sensors.filesystem import FileSensor
-from airflow.providers.postgres.operators.postgres import PostgresOperator
-from airflow.providers.postgres.hooks.postgres import PostgresHook
-from datetime import datetime, timedelta
-import pandas as pd
+from airflow.sensors.filesystem import FileSensor # type: ignore
 import logging
 import os
 import glob
@@ -23,5 +17,13 @@ class FileSensorWithXCom(FileSensor):
             context['ti'].xcom_push(key='file_path', value=files[0])
             return True
         return False
+    
+wait_for_users = FileSensorWithXCom(
+        task_id = 'wait_for_users',
+        fs_conn_id = 'fs_user',
+        filepath = f'{DATA_DIR}data_users_*.csv',
+        poke_interval = 30,
+        timeout = 30 * 5
+    )
 
 

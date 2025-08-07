@@ -1,9 +1,7 @@
 import random
-
 from faker import Faker
 from datetime import datetime, timedelta
 from typing import List, Dict
-from generate_data.generate_users import gen_user
 from utils.config_generate import REACTION_TYPES
 import logging
 

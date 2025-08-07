@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import random
 import uuid
 from typing import List, Dict
-from generate_data.generate_users import gen_user
 from utils.config_generate import NUM_COMMUNITIES, NUM_GROUPS, MAX_MEMBERS_PER_GROUP
 import logging
 

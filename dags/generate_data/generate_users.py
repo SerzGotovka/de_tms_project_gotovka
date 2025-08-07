@@ -9,6 +9,7 @@ from utils.function import save_csv_file
 from faker import Faker
 from typing import List, Dict
 from utils.config_generate import NUM_USERS, PRIVACY_LEVELS, STATUS_OPTIONS
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook #type: ignore
 
 fake = Faker()
 
@@ -31,7 +32,31 @@ def gen_user(**kwargs) -> List[Dict]:
 
 
     temp_file_path = f'/opt/airflow/dags/save_data/users/data_users_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.csv'
+
+    #Функция для сохранения сгенерированных файлов в csv
     save_csv_file(temp_file_path, users)
+
+    filename = f'data_users_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.csv'
+
+    
+    hook = S3Hook(aws_conn_id='minio_default')
+    bucket_name = 'data-bucket'
+
+    if not hook.check_for_bucket(bucket_name):
+        hook.create_bucket(bucket_name)
+
+    hook.load_file(
+
+        filename=temp_file_path,
+        bucket_name=bucket_name,
+        key='/users/' + filename,
+        replace=False
+
+    )
+
+    logging
+
+    os.remove(temp_file_path)
 
     return users
 
@@ -82,6 +107,7 @@ def gen_user_settings(users: List[Dict]) -> List[Dict]:
     temp_file_path = f'/opt/airflow/dags/save_data/users/data_users_settings_{datetime.now().strftime("%Y%m%d%H%M%S")}.csv'
     save_csv_file(temp_file_path, settings)
 
+    
     return settings
 
 

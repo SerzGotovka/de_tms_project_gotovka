@@ -1,9 +1,7 @@
-
 import random
-from faker import Faker
+from faker import Faker 
 import uuid
 from typing import List, Dict, Any
-from generate_data.generate_users import gen_user
 import logging
 
 fake = Faker()

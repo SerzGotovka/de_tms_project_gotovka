@@ -1,6 +1,6 @@
-from airflow import DAG
-from airflow.operators.python import PythonOperator
-from airflow.utils.task_group import TaskGroup
+from airflow import DAG # type: ignore
+from airflow.operators.python import PythonOperator # type: ignore
+from airflow.utils.task_group import TaskGroup # type: ignore
 from datetime import datetime
 import logging
 from generate_data.generate_social_links import generate_blocks, generate_close_friends, generate_followers, generate_friends, generate_mutes, generate_subscriptions
@@ -8,6 +8,7 @@ from generate_data.generate_media import generate_albums, generate_photos, gener
 from generate_data.generate_content import generate_comments, generate_likes, generate_posts, generate_reactions, generate_reels, generate_replies, generate_shares, generate_stories
 from generate_data.generate_group import generate_communities, generate_community_topics, generate_group_members, generate_groups, generate_pinned_posts
 from generate_data.generate_users import gen_user, gen_user_profile, gen_user_settings, gen_user_privacy, gen_user_status
+from sensors.sensor_users import wait_for_users
 
 
 logger = logging.getLogger(__name__)
@@ -272,7 +273,7 @@ with DAG(
     )
 
     # ---------- Зависимости ----------
-    gen_users_task >> gen_groups_task >> gen_photos_task >> gen_videos_task >> gen_friends_task >> gen_communities_task >> [
+    wait_for_users >> gen_users_task >> gen_groups_task >> gen_photos_task >> gen_videos_task >> gen_friends_task >> gen_communities_task >> [
         gen_profiles_task,
         gen_settings_task,
         gen_privacy_task,
