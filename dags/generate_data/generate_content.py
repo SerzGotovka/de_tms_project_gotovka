@@ -167,14 +167,3 @@ def generate_all_data(users: List[Dict]) -> Dict[str, List[Dict]]:
         'reactions': reactions,
         'shares': shares
     }
-
-# # Пример использования
-# if __name__ == "__main__":
-#     users = gen_user()
-#     data = generate_all_data(users)  # <-- В data НЕТ информации о пользователях
-
-#     # Вывод первых 2 записей каждого типа
-#     for key, value in data.items():
-#         print(f"\n{key.upper()}:")
-#         for item in value:
-#             print(item)
