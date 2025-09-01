@@ -210,3 +210,4 @@ check_connection.py
 
 env_file
 dags/save_data/
+.vscode/settings.json

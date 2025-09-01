@@ -1,125 +1,144 @@
-import pandas as pd
-import logging
+from faker import Faker
+from datetime import datetime, timedelta
 import random
 import uuid
-import sys
-import os
-from datetime import datetime, timezone
-from utils.function import load_file_to_minio, save_csv_file
-from faker import Faker
 from typing import List, Dict
-from utils.config_generate import NUM_USERS, PRIVACY_LEVELS, STATUS_OPTIONS
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utils.config_generate import temp_file_path_users, filename_users
+from utils.config_generate import NUM_USERS, BADGE_NAMES, PRIVACY_LEVELS, STATUS_OPTIONS
+import logging
 
 fake = Faker()
 
 
-def gen_user(**kwargs) -> List[Dict]:
-    """создание структуры user и добавление данных"""
+def gen_user(n=NUM_USERS) -> List[Dict]:
+    """Генерация пользователей"""
     users = []
-    for _ in range(NUM_USERS):
-        user = {
+    for i in range(n):
+        record = {
             "id": str(uuid.uuid4()),
-            "username": fake.unique.user_name(),
-            "email": fake.unique.email(),
-            "password_hash": fake.sha256(),  # хэширование пароля
-            "created_at": fake.date_time_between(start_date="-2y", end_date="now"),
-            "updated_at": datetime.now(timezone.utc),
+            "username": fake.user_name(),
+            "email": fake.email(),
+            "password_hash": fake.sha256(),
+            "created_at": fake.date_between(
+                start_date="-2y", end_date="today"
+            ).strftime("%Y.%m.%d %H:%M"),
+            "last_login": fake.date_between(
+                start_date="-1m", end_date="today"
+            ).strftime("%Y.%m.%d %H:%M"),
+            "is_active": random.choice([True, False]),
+            "is_verified": random.choice([True, False]),
         }
-        users.append(user)
+        users.append(record)
     logging.info(f"Сгенерировано пользователей: {len(users)}")
-    # Убираем логирование всего списка users, так как он может быть очень большим
-
- 
-    #Функция для сохранения сгенерированных файлов в csv
-    save_csv_file(temp_file_path_users, users)
-
-    
-    load_file_to_minio(temp_file_path_users, filename_users, folder="/users/")
-    
+    logging.info(users)
     return users
 
 
 def gen_user_profile(users: List[Dict]) -> List[Dict]:
-    """создание структуры user_profiles и добавление данных"""
+    """Генерация профилей пользователей"""
     profiles = []
     for user in users:
-        profile = {
+        record = {
+            "id": str(uuid.uuid4()),
             "user_id": user["id"],
             "first_name": fake.first_name(),
             "last_name": fake.last_name(),
             "bio": fake.text(max_nb_chars=200),
-            "birth_date": fake.date_of_birth(minimum_age=18, maximum_age=70),
+            "avatar_url": fake.image_url(),
+            "cover_photo_url": fake.image_url(),
             "location": fake.city(),
-            "updated_at": datetime.now(timezone.utc),
+            "website": fake.url(),
+            "phone": fake.phone_number(),
+            "birth_date": fake.date_of_birth(minimum_age=13, maximum_age=80).strftime("%Y.%m.%d"),
+            "gender": random.choice(["male", "female", "other", "prefer_not_to_say"]),
+            "badges": random.sample(BADGE_NAMES, random.randint(0, 3)),
+            "updated_at": fake.date_between(
+                start_date="-6m", end_date="today"
+            ).strftime("%Y.%m.%d %H:%M"),
         }
-        profiles.append(profile)
-    logging.info(f"Сгенерировано профилей пользователей: {len(profiles)}")
-
-    temp_file_path = '/opt/airflow/dags/save_data/users/data_users_profiles.csv'
-    save_csv_file(temp_file_path, profiles)
-
+        profiles.append(record)
+    logging.info(f"Сгенерировано профилей: {len(profiles)}")
+    logging.info(profiles)
     return profiles
 
 
 def gen_user_settings(users: List[Dict]) -> List[Dict]:
-    """создание структуры user_settings и добавление данных"""
+    """Генерация настроек пользователей"""
     settings = []
     for user in users:
-        setting = {
+        record = {
+            "id": str(uuid.uuid4()),
             "user_id": user["id"],
-            "language": fake.language_code(),
-            "timezone": fake.timezone(),
+            "language": random.choice(["en", "ru", "es", "fr", "de"]),
+            "timezone": random.choice(["UTC", "UTC+1", "UTC+2", "UTC+3", "UTC-5", "UTC-8"]),
             "theme": random.choice(["light", "dark", "auto"]),
-            "notifications_email": random.choice([True, False]),
-            "notifications_push": random.choice([True, False]),
-            "notifications_marketing": random.choice([True, False]),
-            "updated_at": datetime.now(timezone.utc),
+            "notifications_enabled": random.choice([True, False]),
+            "email_notifications": random.choice([True, False]),
+            "push_notifications": random.choice([True, False]),
+            "two_factor_enabled": random.choice([True, False]),
+            "auto_save_drafts": random.choice([True, False]),
+            "created_at": fake.date_between(
+                start_date="-1y", end_date="today"
+            ).strftime("%Y.%m.%d %H:%M"),
+            "updated_at": fake.date_between(
+                start_date="-1m", end_date="today"
+            ).strftime("%Y.%m.%d %H:%M"),
         }
-        settings.append(setting)
-    logging.info(f"Сгенерировано настроек пользователей: {len(settings)}")
-
-    temp_file_path = '/opt/airflow/dags/save_data/users/data_users_settings.csv'
-    save_csv_file(temp_file_path, settings)
-
-    
+        settings.append(record)
+    logging.info(f"Сгенерировано настроек: {len(settings)}")
+    logging.info(settings)
     return settings
 
 
 def gen_user_privacy(users: List[Dict]) -> List[Dict]:
-    """создание структуры user_privacy и добавление данных"""
+    """Генерация настроек приватности пользователей"""
     privacies = []
     for user in users:
-        privacy = {
+        record = {
+            "id": str(uuid.uuid4()),
             "user_id": user["id"],
             "profile_visibility": random.choice(PRIVACY_LEVELS),
-            "show_email": random.choice([True, False]),
-            "show_birth_date": random.choice([True, False]),
-            "updated_at": datetime.now(timezone.utc),
+            "posts_visibility": random.choice(PRIVACY_LEVELS),
+            "friends_visibility": random.choice(PRIVACY_LEVELS),
+            "photos_visibility": random.choice(PRIVACY_LEVELS),
+            "contact_info_visibility": random.choice(PRIVACY_LEVELS),
+            "search_visibility": random.choice([True, False]),
+            "allow_friend_requests": random.choice([True, False]),
+            "allow_messages": random.choice([True, False]),
+            "show_online_status": random.choice([True, False]),
+            "created_at": fake.date_between(
+                start_date="-1y", end_date="today"
+            ).strftime("%Y.%m.%d %H:%M"),
+            "updated_at": fake.date_between(
+                start_date="-1m", end_date="today"
+            ).strftime("%Y.%m.%d %H:%M"),
         }
-        privacies.append(privacy)
+        privacies.append(record)
     logging.info(f"Сгенерировано настроек приватности: {len(privacies)}")
-
-    temp_file_path = '/opt/airflow/dags/save_data/users/data_users_privacies.csv'
-    save_csv_file(temp_file_path, privacies)
-
+    logging.info(privacies)
     return privacies
 
+
 def gen_user_status(users: List[Dict]) -> List[Dict]:
-    """создание структуры user_status и добавление данных"""
+    """Генерация статусов пользователей"""
     statuses = []
     for user in users:
-        status = {
+        record = {
+            "id": str(uuid.uuid4()),
             "user_id": user["id"],
             "status": random.choice(STATUS_OPTIONS),
-            "last_seen_at": fake.date_time_between(start_date="-3h", end_date="now"),
+            "status_message": fake.sentence(nb_words=5) if random.choice([True, False]) else None,
+            "last_seen": fake.date_between(
+                start_date="-1d", end_date="today"
+            ).strftime("%Y.%m.%d %H:%M"),
+            "is_online": random.choice([True, False]),
+            "created_at": fake.date_between(
+                start_date="-1y", end_date="today"
+            ).strftime("%Y.%m.%d %H:%M"),
+            "updated_at": fake.date_between(
+                start_date="-1h", end_date="today"
+            ).strftime("%Y.%m.%d %H:%M"),
         }
-        statuses.append(status)
-    logging.info(f"Сгенерировано статусов пользователей: {len(statuses)}")
-
-    temp_file_path = '/opt/airflow/dags/save_data/users/data_users_status.csv'
-    save_csv_file(temp_file_path, statuses)
-
+        statuses.append(record)
+    logging.info(f"Сгенерировано статусов: {len(statuses)}")
+    logging.info(statuses)
     return statuses
