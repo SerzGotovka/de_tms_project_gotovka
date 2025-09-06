@@ -9,6 +9,7 @@ from generate_data.generate_content import (
     generate_comments, generate_replies, generate_likes,
     generate_reactions, generate_shares
 )
+from utils.tg_bot import send_telegram_message
 
 
 class DateTimeEncoder(json.JSONEncoder):
@@ -23,19 +24,12 @@ class KafkaDataProducer:
     """Класс для отправки данных в Kafka топики"""
     
     def __init__(self, bootstrap_servers: str = "kafka:9092"):
-        """
-        Инициализация Kafka Producer
-        
-        Args:
-            bootstrap_servers: Адрес Kafka сервера
-        """
+        """Инициализация Kafka Producer"""
         self.conf = {
             'bootstrap.servers': bootstrap_servers,
             'client.id': 'social_media_producer',
             'acks': 'all',  # Ждем подтверждения от всех реплик
-            'retries': 3,   # Количество повторных попыток
-            'batch.size': 16384,  # Размер батча
-            'linger.ms': 10  # Время ожидания для батча
+            'retries': 3   # Количество повторных попыток
             
         }
         
@@ -57,14 +51,7 @@ class KafkaDataProducer:
             logging.info(f'Размер сообщения: {len(msg.value())} байт')
     
     def send_message(self, topic: str, data: Dict[str, Any], key: str = None):
-        """
-        Отправка сообщения в Kafka топик
-        
-        Args:
-            topic: Название топика
-            data: Данные для отправки
-            key: Ключ сообщения (опционально)
-        """
+        """Отправка сообщения в Kafka топик"""
         try:
             # Сериализация данных в JSON с поддержкой datetime/date
             message = json.dumps(data, ensure_ascii=False, cls=DateTimeEncoder)
@@ -88,17 +75,13 @@ class KafkaDataProducer:
             logging.error(f"Ошибка при отправке сообщения в топик {topic}: {str(e)}")
             raise
     
-    def send_media_data(self, users: List[Dict[str, Any]]):
-        """
-        Генерация и отправка медиа данных в соответствующие топики
+    def send_media_data(self, users: List[Dict[str, Any]], context: Dict[str, Any] = None):
+        """Генерация и отправка медиа данных в соответствующие топики"""
         
-        Args:
-            users: Список пользователей для генерации данных
-        """
         logging.info("Начинаем генерацию и отправку медиа данных в Kafka")
         
         # Генерация и отправка фото
-        photos = generate_photos(users, num_photos=10)
+        photos = generate_photos(num_photos=10, **context)
         for photo in photos:
             self.send_message(
                 topic='photos',
@@ -107,7 +90,7 @@ class KafkaDataProducer:
             )
         
         # Генерация и отправка видео
-        videos = generate_videos(users, num_videos=5)
+        videos = generate_videos(num_videos=5, **context)
         for video in videos:
             self.send_message(
                 topic='videos',
@@ -116,7 +99,7 @@ class KafkaDataProducer:
             )
         
         # Генерация и отправка альбомов
-        albums = generate_albums(users, photos, videos, num_albums=3)
+        albums = generate_albums(num_albums=3, **context)
         for album in albums:
             self.send_message(
                 topic='albums',
@@ -128,25 +111,36 @@ class KafkaDataProducer:
         self.producer.flush(timeout=30)  # Ждем до 30 секунд
         logging.info("Отправка медиа данных завершена")
         
+        # Отправка уведомления в Telegram с количеством загруженных файлов
+        total_files = len(photos) + len(videos) + len(albums)
+        message = f"📸 Медиа данные загружены в Kafka:\n"
+        message += f"• Фото: {len(photos)}\n"
+        message += f"• Видео: {len(videos)}\n"
+        message += f"• Альбомы: {len(albums)}\n"
+        message += f"• Всего файлов: {total_files}"
+        
+        try:
+            if send_telegram_message(message):
+                logging.info("Уведомление о загрузке медиа данных отправлено в Telegram")
+            else:
+                logging.error("Не удалось отправить уведомление о загрузке медиа данных в Telegram")
+        except Exception as e:
+            logging.error(f"Ошибка при отправке уведомления в Telegram: {str(e)}")
+        
         return {
             'photos': photos,
             'videos': videos,
             'albums': albums
         }
     
-    def send_content_data(self, users: List[Dict[str, Any]]):
-        """
-        Генерация и отправка контент данных в соответствующие топики
-        
-        Args:
-            users: Список пользователей для генерации данных
-        """
+    def send_content_data(self, users: List[Dict[str, Any]], context: Dict[str, Any] = None):
+        """Генерация и отправка контент данных в соответствующие топики"""
         logging.info("Начинаем генерацию и отправку контент данных в Kafka")
         
         user_ids = [user['id'] for user in users]
         
         # Генерация и отправка постов
-        posts = generate_posts(user_ids, n=10)
+        posts = generate_posts(n=10, **context)
         for post in posts:
             self.send_message(
                 topic='posts',
@@ -155,7 +149,7 @@ class KafkaDataProducer:
             )
         
         # Генерация и отправка историй
-        stories = generate_stories(user_ids, n=5)
+        stories = generate_stories(n=5, **context)
         for story in stories:
             self.send_message(
                 topic='stories',
@@ -164,7 +158,7 @@ class KafkaDataProducer:
             )
         
         # Генерация и отправка Reels
-        reels = generate_reels(user_ids, n=5)
+        reels = generate_reels(n=5, **context)
         for reel in reels:
             self.send_message(
                 topic='reels',
@@ -173,7 +167,7 @@ class KafkaDataProducer:
             )
         
         # Генерация и отправка комментариев
-        comments = generate_comments(user_ids, posts, n=15)
+        comments = generate_comments(n=15, **context)
         for comment in comments:
             self.send_message(
                 topic='comments',
@@ -182,7 +176,7 @@ class KafkaDataProducer:
             )
         
         # Генерация и отправка ответов на комментарии
-        replies = generate_replies(user_ids, comments, n=10)
+        replies = generate_replies(n=10, **context)
         for reply in replies:
             self.send_message(
                 topic='replies',
@@ -191,7 +185,7 @@ class KafkaDataProducer:
             )
         
         # Генерация и отправка лайков
-        likes = generate_likes(user_ids, posts, n=20)
+        likes = generate_likes(n=20, **context)
         for like in likes:
             self.send_message(
                 topic='likes',
@@ -200,7 +194,7 @@ class KafkaDataProducer:
             )
         
         # Генерация и отправка реакций
-        reactions = generate_reactions(user_ids, posts, n=15)
+        reactions = generate_reactions(n=15, **context)
         for reaction in reactions:
             self.send_message(
                 topic='reactions',
@@ -209,7 +203,7 @@ class KafkaDataProducer:
             )
         
         # Генерация и отправка репостов
-        shares = generate_shares(user_ids, posts, n=8)
+        shares = generate_shares(n=8, **context)
         for share in shares:
             self.send_message(
                 topic='shares',
@@ -220,6 +214,27 @@ class KafkaDataProducer:
         # Ожидание доставки всех сообщений
         self.producer.flush(timeout=30)  # Ждем до 30 секунд
         logging.info("Отправка контент данных завершена")
+        
+        # Отправка уведомления в Telegram с количеством загруженных файлов
+        total_files = len(posts) + len(stories) + len(reels) + len(comments) + len(replies) + len(likes) + len(reactions) + len(shares)
+        message = f"📝 Контент данные загружены в Kafka:\n"
+        message += f"• Посты: {len(posts)}\n"
+        message += f"• Истории: {len(stories)}\n"
+        message += f"• Reels: {len(reels)}\n"
+        message += f"• Комментарии: {len(comments)}\n"
+        message += f"• Ответы: {len(replies)}\n"
+        message += f"• Лайки: {len(likes)}\n"
+        message += f"• Реакции: {len(reactions)}\n"
+        message += f"• Репосты: {len(shares)}\n"
+        message += f"• Всего файлов: {total_files}"
+        
+        try:
+            if send_telegram_message(message):
+                logging.info("Уведомление о загрузке контент данных отправлено в Telegram")
+            else:
+                logging.error("Не удалось отправить уведомление о загрузке контент данных в Telegram")
+        except Exception as e:
+            logging.error(f"Ошибка при отправке уведомления в Telegram: {str(e)}")
         
         return {
             'posts': posts,
@@ -254,10 +269,27 @@ def send_media_to_kafka(**context):
         
         # Создаем producer и отправляем данные
         producer = KafkaDataProducer()
-        media_data = producer.send_media_data(users)
+        media_data = producer.send_media_data(users, context)
         producer.close()
         
         logging.info(f"Медиа данные успешно отправлены в Kafka: {len(media_data['photos'])} фото, {len(media_data['videos'])} видео, {len(media_data['albums'])} альбомов")
+        
+        # Отправка уведомления в Telegram для отдельной функции
+        total_files = len(media_data['photos']) + len(media_data['videos']) + len(media_data['albums'])
+        message = f"📸 Медиа данные загружены в Kafka (отдельная задача):\n"
+        message += f"• Фото: {len(media_data['photos'])}\n"
+        message += f"• Видео: {len(media_data['videos'])}\n"
+        message += f"• Альбомы: {len(media_data['albums'])}\n"
+        message += f"• Всего файлов: {total_files}"
+        
+        try:
+            if send_telegram_message(message):
+                logging.info("Уведомление о загрузке медиа данных (отдельная задача) отправлено в Telegram")
+            else:
+                logging.error("Не удалось отправить уведомление о загрузке медиа данных (отдельная задача) в Telegram")
+        except Exception as e:
+            logging.error(f"Ошибка при отправке уведомления в Telegram: {str(e)}")
+        
         return media_data
         
     except Exception as e:
@@ -278,10 +310,32 @@ def send_content_to_kafka(**context):
         
         # Создаем producer и отправляем данные
         producer = KafkaDataProducer()
-        content_data = producer.send_content_data(users)
+        content_data = producer.send_content_data(users, context)
         producer.close()
         
         logging.info(f"Контент данные успешно отправлены в Kafka: {len(content_data['posts'])} постов, {len(content_data['stories'])} историй, {len(content_data['reels'])} reels")
+        
+        # Отправка уведомления в Telegram для отдельной функции
+        total_files = len(content_data['posts']) + len(content_data['stories']) + len(content_data['reels']) + len(content_data['comments']) + len(content_data['replies']) + len(content_data['likes']) + len(content_data['reactions']) + len(content_data['shares'])
+        message = f"📝 Контент данные загружены в Kafka (отдельная задача):\n"
+        message += f"• Посты: {len(content_data['posts'])}\n"
+        message += f"• Истории: {len(content_data['stories'])}\n"
+        message += f"• Reels: {len(content_data['reels'])}\n"
+        message += f"• Комментарии: {len(content_data['comments'])}\n"
+        message += f"• Ответы: {len(content_data['replies'])}\n"
+        message += f"• Лайки: {len(content_data['likes'])}\n"
+        message += f"• Реакции: {len(content_data['reactions'])}\n"
+        message += f"• Репосты: {len(content_data['shares'])}\n"
+        message += f"• Всего файлов: {total_files}"
+        
+        try:
+            if send_telegram_message(message):
+                logging.info("Уведомление о загрузке контент данных (отдельная задача) отправлено в Telegram")
+            else:
+                logging.error("Не удалось отправить уведомление о загрузке контент данных (отдельная задача) в Telegram")
+        except Exception as e:
+            logging.error(f"Ошибка при отправке уведомления в Telegram: {str(e)}")
+        
         return content_data
         
     except Exception as e:
@@ -302,9 +356,27 @@ def send_all_to_kafka(**context):
         
         # Создаем producer и отправляем все данные
         producer = KafkaDataProducer()
-        media_data = producer.send_media_data(users)
-        content_data = producer.send_content_data(users)
+        media_data = producer.send_media_data(users, context)
+        content_data = producer.send_content_data(users, context)
         producer.close()
+        
+        # Отправка общего уведомления в Telegram с общим количеством загруженных файлов
+        total_media_files = len(media_data['photos']) + len(media_data['videos']) + len(media_data['albums'])
+        total_content_files = len(content_data['posts']) + len(content_data['stories']) + len(content_data['reels']) + len(content_data['comments']) + len(content_data['replies']) + len(content_data['likes']) + len(content_data['reactions']) + len(content_data['shares'])
+        total_files = total_media_files + total_content_files
+        
+        message = f"🚀 Все данные успешно загружены в Kafka:\n"
+        message += f"📸 Медиа файлы: {total_media_files}\n"
+        message += f"📝 Контент файлы: {total_content_files}\n"
+        message += f"📊 Всего файлов: {total_files}"
+        
+        try:
+            if send_telegram_message(message):
+                logging.info("Общее уведомление о загрузке всех данных отправлено в Telegram")
+            else:
+                logging.error("Не удалось отправить общее уведомление о загрузке всех данных в Telegram")
+        except Exception as e:
+            logging.error(f"Ошибка при отправке общего уведомления в Telegram: {str(e)}")
         
         logging.info("Все данные успешно отправлены в Kafka")
         return {
@@ -317,37 +389,3 @@ def send_all_to_kafka(**context):
         raise
 
 
-def test_kafka_connection(bootstrap_servers: str = "kafka:9092"):
-    """Тестирование подключения к Kafka"""
-    try:
-        logging.info(f"Тестирование подключения к Kafka: {bootstrap_servers}")
-        
-        conf = {
-            'bootstrap.servers': bootstrap_servers,
-            'client.id': 'test_producer'
-        }
-        
-        producer = Producer(conf)
-        
-        # Отправляем тестовое сообщение
-        test_data = {
-            "test": True,
-            "timestamp": datetime.now().isoformat(),
-            "message": "Тестовое сообщение для проверки подключения"
-        }
-        
-        producer.produce(
-            topic='test_topic',
-            value=json.dumps(test_data, cls=DateTimeEncoder).encode('utf-8'),
-            callback=lambda err, msg: logging.info(f"Тестовое сообщение доставлено: {msg.topic()}") if not err else logging.error(f"Ошибка доставки: {err}")
-        )
-        
-        producer.poll(10)  # Ждем 10 секунд
-        producer.flush(timeout=10)
-        
-        logging.info("Подключение к Kafka успешно протестировано")
-        return True
-        
-    except Exception as e:
-        logging.error(f"Ошибка подключения к Kafka: {str(e)}")
-        return False

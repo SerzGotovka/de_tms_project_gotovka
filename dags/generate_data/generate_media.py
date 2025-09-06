@@ -4,32 +4,43 @@ import uuid
 from typing import List, Dict, Any
 import logging
 
+# from utils.function_kafka import PHOTOS_TOPIC, send_to_kafka
+
 fake = Faker()
 
 
-def generate_photos(users: List[Dict[str, Any]], num_photos: int = 10) -> List[Dict[str, Any]]:
+def generate_photos(num_photos: int = 10, **context) -> List[Dict[str, Any]]:
     """Генерация фото"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     photos = []
+    
     for _ in range(num_photos):
         user = random.choice(users)
-        photos.append(
-            {
-                "id": str(uuid.uuid4()),
-                "user_id": user["id"],  
-                "filename": fake.file_name(extension="jpg"),
-                "url": fake.image_url(width=1920, height=1080),
-                "description": fake.sentence(nb_words=6),
-                "uploaded_at": fake.date_between(start_date="-1y", end_date="today"),
-                "is_private": random.choice([True, False]),
-            }
-        )
+        photo = {
+            "id": str(uuid.uuid4()),
+            "user_id": user["id"],  
+            "filename": fake.file_name(extension="jpg"),
+            "url": fake.image_url(width=1920, height=1080),
+            "description": fake.sentence(nb_words=6),
+            "uploaded_at": fake.date_between(start_date="-1y", end_date="today"),
+            "is_private": random.choice([True, False]),
+        }
+        photos.append(photo)
+        
+        # Исправлено: отправляем каждое фото в Kafka
+        # send_to_kafka(PHOTOS_TOPIC, photo['id'], str(photo))
+
     logging.info(f"Сгенерировано фото: {len(photos)}")
-    logging.info(photos)
+
+    context["task_instance"].xcom_push(key="photos", value=photos)
+    context["task_instance"].xcom_push(key="number_photos", value=len(photos))
+
     return photos
 
 
-def generate_videos(users: List[Dict[str, Any]], num_videos: int = 5) -> List[Dict[str, Any]]:
+def generate_videos(num_videos: int = 5, **context) -> List[Dict[str, Any]]:
     """Генерация видео"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     videos = []
     for _ in range(num_videos):
         user = random.choice(users)
@@ -44,13 +55,19 @@ def generate_videos(users: List[Dict[str, Any]], num_videos: int = 5) -> List[Di
                 "visibility": random.choice(["public", "private", "unlisted"]),
             }
         )
+    number_videos = len(videos)
     logging.info(f"Сгенерировано видео: {len(videos)}")
-    logging.info(videos)
+
+    context["task_instance"].xcom_push(key="videos", value=videos)
+    context["task_instance"].xcom_push(key="number_videos", value=number_videos)
     return videos
 
 
-def generate_albums(users: List[Dict[str, Any]], photos: List[Dict[str, Any]], videos: List[Dict[str, Any]], num_albums: int = 3) -> List[Dict[str, Any]]:
+def generate_albums(num_albums: int = 3, **context) -> List[Dict[str, Any]]:
     """Генерация альбомов"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    photos = context["task_instance"].xcom_pull(key="photos", task_ids="generate_data_group.gen_photos")
+    videos = context["task_instance"].xcom_pull(key="videos", task_ids="generate_data_group.gen_videos")
     albums = []
     for _ in range(num_albums):
         user = random.choice(users)
@@ -67,20 +84,23 @@ def generate_albums(users: List[Dict[str, Any]], photos: List[Dict[str, Any]], v
                 "media_ids": selected_photos + selected_videos,  # Список ID медиафайлов
             }
         )
+    number_albums = len(albums)
     logging.info(f"Сгенерировано альбомов: {len(albums)}")
-    logging.info(albums)
+
+    context["task_instance"].xcom_push(key="albums", value=albums)
+    context["task_instance"].xcom_push(key="number_albums", value=number_albums)
     return albums
 
-def generate_all_media(users):
-    # Генерация медиа
-    photos = generate_photos(users, num_photos=10)
-    videos = generate_videos(users, num_videos=5)
-    albums = generate_albums(users, photos, videos, num_albums=3)
+# def generate_all_media(users):
+#     # Генерация медиа
+#     photos = generate_photos(users, num_photos=10)
+#     videos = generate_videos(users, num_videos=5)
+#     albums = generate_albums(users, photos, videos, num_albums=3)
 
-    return {
-        'photos': photos,
-        'videos': videos,
-        'albums': albums
-    }
+#     return {
+#         'photos': photos,
+#         'videos': videos,
+#         'albums': albums
+#     }
 
 #

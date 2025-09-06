@@ -6,13 +6,17 @@ from typing import List, Dict
 from utils.config_generate import NUM_USERS, BADGE_NAMES, PRIVACY_LEVELS, STATUS_OPTIONS
 import logging
 
+from utils.function_minio import save_csv_file
+from utils.config_generate import (temp_file_path_users, temp_file_path_profiles,
+                                   temp_file_path_user_settings, temp_file_path_user_privacy,
+                                   temp_file_path_user_status)
 fake = Faker()
 
 
-def gen_user(n=NUM_USERS) -> List[Dict]:
+def gen_user(n=NUM_USERS, **context) -> List[Dict]:
     """Генерация пользователей"""
     users = []
-    for i in range(n):
+    for _ in range(n):
         record = {
             "id": str(uuid.uuid4()),
             "username": fake.user_name(),
@@ -28,13 +32,23 @@ def gen_user(n=NUM_USERS) -> List[Dict]:
             "is_verified": random.choice([True, False]),
         }
         users.append(record)
-    logging.info(f"Сгенерировано пользователей: {len(users)}")
+    num_users = len(users)
+    logging.info(f"Сгенерировано пользователей: {num_users}")
     logging.info(users)
-    return users
+    
+    # Сохраняем данные пользователей в XCom
+    context["task_instance"].xcom_push(key="users", value=users)
+    # Сохраняем количество пользователей в XCom
+    context["task_instance"].xcom_push(key="num_users", value=num_users)
+    
+    save_csv_file(temp_file_path_users, users)
+    
+    return num_users
 
 
-def gen_user_profile(users: List[Dict]) -> List[Dict]:
+def gen_user_profile(**context) -> List[Dict]:
     """Генерация профилей пользователей"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     profiles = []
     for user in users:
         record = {
@@ -56,13 +70,24 @@ def gen_user_profile(users: List[Dict]) -> List[Dict]:
             ).strftime("%Y.%m.%d %H:%M"),
         }
         profiles.append(record)
+    num_profiles = len(profiles)
     logging.info(f"Сгенерировано профилей: {len(profiles)}")
     logging.info(profiles)
+
+    
+    # profiles = gen_user_profile(users)
+    context["task_instance"].xcom_push(key="profiles", value=profiles)
+
+    context["task_instance"].xcom_push(key="num_profiles", value=num_profiles)
+
+
+    save_csv_file(temp_file_path_profiles, profiles)
     return profiles
 
 
-def gen_user_settings(users: List[Dict]) -> List[Dict]:
+def gen_user_settings(**context) -> List[Dict]:
     """Генерация настроек пользователей"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     settings = []
     for user in users:
         record = {
@@ -84,13 +109,21 @@ def gen_user_settings(users: List[Dict]) -> List[Dict]:
             ).strftime("%Y.%m.%d %H:%M"),
         }
         settings.append(record)
+    num_settings = len(settings)
     logging.info(f"Сгенерировано настроек: {len(settings)}")
     logging.info(settings)
+
+    # settings = gen_user_settings(users)
+    context["task_instance"].xcom_push(key="settings", value=settings)
+    context["task_instance"].xcom_push(key="num_settings", value=num_settings)
+    
+    save_csv_file(temp_file_path_user_settings, settings)
     return settings
 
 
-def gen_user_privacy(users: List[Dict]) -> List[Dict]:
+def gen_user_privacy(**context) -> List[Dict]:
     """Генерация настроек приватности пользователей"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     privacies = []
     for user in users:
         record = {
@@ -113,13 +146,22 @@ def gen_user_privacy(users: List[Dict]) -> List[Dict]:
             ).strftime("%Y.%m.%d %H:%M"),
         }
         privacies.append(record)
+    num_privacies = len(privacies)
     logging.info(f"Сгенерировано настроек приватности: {len(privacies)}")
     logging.info(privacies)
+
+    
+    # privacies = gen_user_privacy(users)
+    context["task_instance"].xcom_push(key="privacies", value=privacies)
+    context["task_instance"].xcom_push(key="num_privacies", value=num_privacies)
+    
+    save_csv_file(temp_file_path_user_privacy, privacies)
     return privacies
 
 
-def gen_user_status(users: List[Dict]) -> List[Dict]:
+def gen_user_status(**context) -> List[Dict]:
     """Генерация статусов пользователей"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     statuses = []
     for user in users:
         record = {
@@ -139,6 +181,14 @@ def gen_user_status(users: List[Dict]) -> List[Dict]:
             ).strftime("%Y.%m.%d %H:%M"),
         }
         statuses.append(record)
+    num_statuses = len(statuses)
     logging.info(f"Сгенерировано статусов: {len(statuses)}")
     logging.info(statuses)
+    
+    
+    # statuses = gen_user_status(users)
+    context["task_instance"].xcom_push(key="statuses", value=statuses)
+    context["task_instance"].xcom_push(key="num_statuses", value=num_statuses)
+    
+    save_csv_file(temp_file_path_user_status, statuses)
     return statuses

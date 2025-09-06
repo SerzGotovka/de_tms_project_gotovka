@@ -1,10 +1,11 @@
+from typing import Dict
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook  # type: ignore
 import pandas as pd
 import logging
 import os
 
 
-def save_csv_file(temp_file_path: str, data=None) -> None:
+def save_csv_file(temp_file_path: str, data:Dict=None) -> None:
     """Функция для сохранения сгенерированных данных в csv"""
     df = pd.DataFrame(data)
 
@@ -15,12 +16,21 @@ def save_csv_file(temp_file_path: str, data=None) -> None:
     logging.info(f"Файл создан: {temp_file_path}")
 
 
-def load_file_to_minio(path: str, filename: str, bucket_name: str = "data-bucket", folder:str=None) -> None:
+def load_file_to_minio(path: str, filename: str, bucket_name: str = "data-bucket", folder:str=None) -> int:
     """Функция для загрузки файлов в MINIO"""
 
     # Проверяем существование файла перед загрузкой
     if not os.path.exists(path):
         raise FileNotFoundError(f"Файл {path} не найден")
+
+    # Подсчитываем количество записей в CSV файле
+    try:
+        df = pd.read_csv(path)
+        record_count = len(df)
+        logging.info(f"Файл {filename} содержит {record_count} записей")
+    except Exception as e:
+        logging.warning(f"Не удалось подсчитать записи в файле {filename}: {e}")
+        record_count = 0
 
     hook = S3Hook(aws_conn_id="minio_default")
     logging.info("S3Hook инициализирован")
@@ -45,6 +55,8 @@ def load_file_to_minio(path: str, filename: str, bucket_name: str = "data-bucket
             logging.info(f"Временный файл {path} удален")
         except Exception as e:
             logging.warning(f"Не удалось удалить временный файл {path}: {str(e)}")
+            
+        return record_count
             
     except Exception as e:
         logging.error(f"Ошибка при загрузке файла {path} в MINIO: {str(e)}")

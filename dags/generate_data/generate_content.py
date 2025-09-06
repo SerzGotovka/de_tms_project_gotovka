@@ -10,8 +10,13 @@ fake = Faker()
 
 
 
-def generate_posts(user_ids: List[str], n=5) -> List[Dict]:
+def generate_posts(n=5, **context) -> List[Dict]:
     """Генерация постов"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    if not users:
+        raise ValueError("Не удалось получить данные пользователей из XCom")
+    user_ids = [u["id"] for u in users]
+    
     posts = []
     for i in range(n):
         posts.append({
@@ -24,11 +29,18 @@ def generate_posts(user_ids: List[str], n=5) -> List[Dict]:
         })
     logging.info(f"Сгенерировано постов: {len(posts)}")
     logging.info(posts)
+    context["task_instance"].xcom_push(key="posts", value=posts)
+    context["task_instance"].xcom_push(key="num_posts", value=len(posts))
     return posts
 
 
-def generate_stories(user_ids: List[str], n=5) -> List[Dict]:
+def generate_stories(n=5, **context) -> List[Dict]:
     """Генерация историй"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    if not users:
+        raise ValueError("Не удалось получить данные пользователей из XCom")
+    user_ids = [u["id"] for u in users]
+    
     stories = []
     for i in range(n):
         stories.append({
@@ -40,11 +52,17 @@ def generate_stories(user_ids: List[str], n=5) -> List[Dict]:
         })
     logging.info(f"Сгенерировано историй: {len(stories)}")
     logging.info(stories)
+    context["task_instance"].xcom_push(key="num_stories", value=len(stories))
     return stories
 
 
-def generate_reels(user_ids: List[str], n=5) -> List[Dict]:
+def generate_reels(n=5, **context) -> List[Dict]:
     """Генерация Reels"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    if not users:
+        raise ValueError("Не удалось получить данные пользователей из XCom")
+    user_ids = [u["id"] for u in users]
+    
     reels = []
     for i in range(n):
         reels.append({
@@ -57,11 +75,22 @@ def generate_reels(user_ids: List[str], n=5) -> List[Dict]:
         })
     logging.info(f"Сгенерировано Reels: {len(reels)}")
     logging.info(reels)
+    context["task_instance"].xcom_push(key="num_reels", value=len(reels))
     return reels
 
 
-def generate_comments(user_ids: List[str], posts: List[Dict], n=10) -> List[Dict]:
+def generate_comments(n=10, **context) -> List[Dict]:
     """Генерация комментариев"""
+
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    if not users:
+        raise ValueError("Не удалось получить данные пользователей из XCom")
+    user_ids = [u["id"] for u in users]
+    
+    posts = context["task_instance"].xcom_pull(key="posts", task_ids="generate_data_group.gen_posts")
+    if not posts:
+        raise ValueError("Не удалось получить данные постов из XCom")
+    
     comments = []
     for i in range(n):
         comments.append({
@@ -73,11 +102,22 @@ def generate_comments(user_ids: List[str], posts: List[Dict], n=10) -> List[Dict
         })
     logging.info(f"Сгенерировано комментариев: {len(comments)}")
     logging.info(comments)
+    context["task_instance"].xcom_push(key="comments", value=comments)
+    context["task_instance"].xcom_push(key="num_comments", value=len(comments))
     return comments
 
 
-def generate_replies(user_ids: List[str], comments: List[Dict], n=10) -> List[Dict]:
+def generate_replies(n=10, **context) -> List[Dict]:
     """Генерация ответов на комментарии"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    if not users:
+        raise ValueError("Не удалось получить данные пользователей из XCom")
+    user_ids = [u["id"] for u in users]
+    
+    comments = context["task_instance"].xcom_pull(key="comments", task_ids="generate_data_group.gen_comments")
+    if not comments:
+        raise ValueError("Не удалось получить данные комментариев из XCom")
+    
     replies = []
     for i in range(n):
         comment = random.choice(comments)
@@ -90,11 +130,21 @@ def generate_replies(user_ids: List[str], comments: List[Dict], n=10) -> List[Di
         })
     logging.info(f"Сгенерировано ответов на комментарии: {len(replies)}")
     logging.info(replies)
+    context["task_instance"].xcom_push(key="num_replies", value=len(replies))
     return replies
 
 
-def generate_likes(user_ids: List[str], posts: List[Dict], n=20) -> List[Dict]:
+def generate_likes(n=20, **context) -> List[Dict]:
     """Генерация лайков"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    if not users:
+        raise ValueError("Не удалось получить данные пользователей из XCom")
+    user_ids = [u["id"] for u in users]
+    
+    posts = context["task_instance"].xcom_pull(key="posts", task_ids="generate_data_group.gen_posts")
+    if not posts:
+        raise ValueError("Не удалось получить данные постов из XCom")
+    
     likes = []
     for i in range(n):
         post = random.choice(posts)
@@ -106,11 +156,21 @@ def generate_likes(user_ids: List[str], posts: List[Dict], n=20) -> List[Dict]:
         })
     logging.info(f"Сгенерировано лайков: {len(likes)}")
     logging.info(likes)
+    context["task_instance"].xcom_push(key="num_likes", value=len(likes))
     return likes
 
 
-def generate_reactions(user_ids: List[str], posts: List[Dict], n=15) -> List[Dict]:
+def generate_reactions(n=15, **context) -> List[Dict]:
     """Генерация реакций"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    if not users:
+        raise ValueError("Не удалось получить данные пользователей из XCom")
+    user_ids = [u["id"] for u in users]
+    
+    posts = context["task_instance"].xcom_pull(key="posts", task_ids="generate_data_group.gen_posts")
+    if not posts:
+        raise ValueError("Не удалось получить данные постов из XCom")
+    
     reactions = []
     for i in range(n):
         post = random.choice(posts)
@@ -123,11 +183,21 @@ def generate_reactions(user_ids: List[str], posts: List[Dict], n=15) -> List[Dic
         })
     logging.info(f"Сгенерировано реакций: {len(reactions)}")
     logging.info(reactions)
+    context["task_instance"].xcom_push(key="num_reactions", value=len(reactions))
     return reactions
 
 
-def generate_shares(user_ids: List[str], posts: List[Dict], n=10) -> List[Dict]:
+def generate_shares(n=10, **context) -> List[Dict]:
     """Генерация репостов"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    if not users:
+        raise ValueError("Не удалось получить данные пользователей из XCom")
+    user_ids = [u["id"] for u in users]
+    
+    posts = context["task_instance"].xcom_pull(key="posts", task_ids="generate_data_group.gen_posts")
+    if not posts:
+        raise ValueError("Не удалось получить данные постов из XCom")
+    
     shares = []
     for i in range(n):
         post = random.choice(posts)
@@ -139,31 +209,32 @@ def generate_shares(user_ids: List[str], posts: List[Dict], n=10) -> List[Dict]:
         })
     logging.info(f"Сгенерировано репостов: {len(shares)}")  
     logging.info(shares)
+    context["task_instance"].xcom_push(key="num_shares", value=len(shares))
     return shares
 
 
-def generate_all_data(users: List[Dict]) -> Dict[str, List[Dict]]:
-    """Финальная генерация всех данных"""
-    user_ids = [user['id'] for user in users]
+# def generate_all_data(users: List[Dict]) -> Dict[str, List[Dict]]:
+#     """Финальная генерация всех данных"""
+#     user_ids = [user['id'] for user in users]
 
     
-    posts = generate_posts(user_ids)
-    stories = generate_stories(user_ids)
-    reels = generate_reels(user_ids)
-    comments = generate_comments(user_ids, posts)
-    replies = generate_replies(user_ids, comments)
-    likes = generate_likes(user_ids, posts)
-    reactions = generate_reactions(user_ids, posts)
-    shares = generate_shares(user_ids, posts)
+#     posts = generate_posts(user_ids)
+#     stories = generate_stories(user_ids)
+#     reels = generate_reels(user_ids)
+#     comments = generate_comments(user_ids, posts)
+#     replies = generate_replies(user_ids, comments)
+#     likes = generate_likes(user_ids, posts)
+#     reactions = generate_reactions(user_ids, posts)
+#     shares = generate_shares(user_ids, posts)
 
-    # 3. Возвращаем только нужные структуры (без пользователей!)
-    return {
-        'posts': posts,
-        'stories': stories,
-        'reels': reels,
-        'comments': comments,
-        'replies': replies,
-        'likes': likes,
-        'reactions': reactions,
-        'shares': shares
-    }
+#     # 3. Возвращаем только нужные структуры (без пользователей!)
+#     return {
+#         'posts': posts,
+#         'stories': stories,
+#         'reels': reels,
+#         'comments': comments,
+#         'replies': replies,
+#         'likes': likes,
+#         'reactions': reactions,
+#         'shares': shares
+#     }

@@ -5,15 +5,18 @@ import uuid
 from typing import List, Dict
 from utils.config_generate import NUM_COMMUNITIES, NUM_GROUPS, MAX_MEMBERS_PER_GROUP
 import logging
+from utils.function_minio import save_csv_file
+from utils.config_generate import (temp_file_path_communities, temp_file_path_community_topics,
+                                   temp_file_path_group_members, temp_file_path_pinned_posts, temp_file_path_groups)
 
 fake = Faker()
 
 
     
-def generate_communities(n=NUM_COMMUNITIES) -> List[Dict]:
+def generate_communities(n=NUM_COMMUNITIES, **context) -> List[Dict]:
     """Генерация сообществ"""
     communities = []
-    for i in range(n):
+    for _ in range(n):
         record = {
             "id": str(uuid.uuid4()),
             "name": fake.bs().title(),
@@ -24,16 +27,25 @@ def generate_communities(n=NUM_COMMUNITIES) -> List[Dict]:
             "member_count": random.randint(100, 10000),
         }
         communities.append(record)
+    num_communities = len(communities)
     logging.info(f"Сгенерировано сообществ: {len(communities)}")
     logging.info(communities)
+
+    # communities = generate_communities()
+
+    context["task_instance"].xcom_push(key="communities", value=communities)
+    context["task_instance"].xcom_push(key="num_communities", value=num_communities)
+    save_csv_file(temp_file_path_communities, communities)
     return communities
 
 
 
-def generate_groups(user_ids: List[str], n=NUM_GROUPS) -> List[Dict]:
+def generate_groups(n=NUM_GROUPS, **context) -> List[Dict]:
     """Генерация групп с владельцами"""
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    user_ids = [u["id"] for u in users]
     groups = []
-    for i in range(n):
+    for _ in range(n):
         record = {
             "id": str(uuid.uuid4()),
             "owner_id": random.choice(user_ids),
@@ -45,13 +57,28 @@ def generate_groups(user_ids: List[str], n=NUM_GROUPS) -> List[Dict]:
             ).strftime("%Y.%m.%d %H:%M"),
         }
         groups.append(record)
+    num_groups = len(groups)
     logging.info(f"Сгенерировано групп: {len(groups)}")
     logging.info(groups)
+
+    
+    # groups = generate_groups(user_ids)
+
+    context["task_instance"].xcom_push(key="groups", value=groups)
+    context["task_instance"].xcom_push(key="num_groups", value=num_groups)
+    
+    save_csv_file(temp_file_path_groups, groups)
     return groups
 
 
-def generate_group_members(group_ids: List[str], user_ids: List[str], n=MAX_MEMBERS_PER_GROUP) -> List[Dict]:
+def generate_group_members(n=MAX_MEMBERS_PER_GROUP, **context) -> List[Dict]:
     """Генерация участников групп"""
+
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    groups = context["task_instance"].xcom_pull(key="groups", task_ids="generate_data_group.gen_groups")
+    user_ids = [u["id"] for u in users]
+    group_ids = [g["id"] for g in groups]
+
     members = []
     for group_id in group_ids:
         num_members = random.randint(3, n)
@@ -69,14 +96,26 @@ def generate_group_members(group_ids: List[str], user_ids: List[str], n=MAX_MEMB
                     "role": random.choice(["member", "moderator", "admin"]),
                 }
             )
+    num_group_members = len(members)
     logging.info(f"Сгенерировано участников групп: {len(members)}")
     logging.info(members)
+
+    
+    # members = generate_group_members(group_ids, user_ids)
+
+    context["task_instance"].xcom_push(key="group_members", value=members)
+    context["task_instance"].xcom_push(key="num_group_members", value=num_group_members)
+    save_csv_file(temp_file_path_group_members, members)
     return members
 
 
 
-def generate_community_topics(communities: List[Dict], n=3) -> List[Dict]:
+def generate_community_topics(n=3, **context) -> List[Dict]:
     """Генерация тем для сообществ"""
+
+    communities = context["task_instance"].xcom_pull(
+        key="communities", task_ids="generate_data_group.gen_communities"
+    )
     topics = []
     for community in communities:
         for i in range(n):
@@ -91,20 +130,37 @@ def generate_community_topics(communities: List[Dict], n=3) -> List[Dict]:
                     ).strftime("%Y.%m.%d %H:%M"),
                 }
             )
+    num_community_topics = len(topics)
     logging.info(f"Сгенерировано тем для сообществ: {len(topics)}")
     logging.info(topics)
+
+    
+    # topics = generate_community_topics(communities)
+    context["task_instance"].xcom_push(key="num_community_topics", value=num_community_topics)
+    context["task_instance"].xcom_push(key="community_topics", value=topics)
+    
+    save_csv_file(temp_file_path_community_topics, topics)
     return topics
 
 
 
-def generate_pinned_posts(
-    communities: List[Dict], groups: List[Dict], user_ids: List[str], n=5) -> List[Dict]:
+def generate_pinned_posts(n=5, **context) -> List[Dict]:
     """Генерация закрепленных постов"""
+
+    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    communities = context["task_instance"].xcom_pull(
+        key="communities", task_ids="generate_data_group.gen_communities"
+    )
+    groups = context["task_instance"].xcom_pull(key="groups", task_ids="generate_data_group.gen_groups")
+    user_ids = [u["id"] for u in users]
+    # pinned_posts = generate_pinned_posts(communities, groups, user_ids, n=5)
+
+ 
     pinned_posts = []
     community_ids = [c["id"] for c in communities]
     group_ids = [g["id"] for g in groups]
 
-    for i in range(n):
+    for _ in range(n):
         source_type = random.choice(["community", "group"])
 
         if source_type == "community":
@@ -129,36 +185,42 @@ def generate_pinned_posts(
                 ).strftime("%Y.%m.%d %H:%M"),
             }
         )
+    num_pinned_posts = len(pinned_posts)
     logging.info(f"Сгенерировано закрепленных постов: {len(pinned_posts)}")
     logging.info(pinned_posts)
+
+    
+    context["task_instance"].xcom_push(key="pinned_posts", value=pinned_posts)
+    context["task_instance"].xcom_push(key="num_pinned_posts", value=num_pinned_posts)
+    save_csv_file(temp_file_path_pinned_posts, pinned_posts)
     return pinned_posts
 
 
 
-def generate_all_group_data(users: List[Dict]):
-    user_ids = [user['id'] for user in users]
+# def generate_all_group_data(users: List[Dict]):
+#     user_ids = [user['id'] for user in users]
 
-    # Генерация сообществ
-    communities = generate_communities()
-    community_ids = [c["id"] for c in communities]
+#     # Генерация сообществ
+#     communities = generate_communities()
+#     community_ids = [c["id"] for c in communities]
 
-    # Генерация групп
-    groups = generate_groups(user_ids)
-    group_ids = [g["id"] for g in groups]
+#     # Генерация групп
+#     groups = generate_groups(user_ids)
+#     group_ids = [g["id"] for g in groups]
 
-    # Генерация участников
-    group_members = generate_group_members(group_ids, user_ids)
+#     # Генерация участников
+#     group_members = generate_group_members(group_ids, user_ids)
 
-    # Генерация тем
-    community_topics = generate_community_topics(communities)
+#     # Генерация тем
+#     community_topics = generate_community_topics(communities)
 
-    # Генерация закрепленных постов
-    pinned_posts = generate_pinned_posts(communities, groups, user_ids)
+#     # Генерация закрепленных постов
+#     pinned_posts = generate_pinned_posts(communities, groups, user_ids)
 
-    return {
-        "communities": communities,
-        "community_topics": community_topics,
-        "groups": groups,
-        "group_members": group_members,
-        "pinned_posts": pinned_posts,
-    }
+#     return {
+#         "communities": communities,
+#         "community_topics": community_topics,
+#         "groups": groups,
+#         "group_members": group_members,
+#         "pinned_posts": pinned_posts,
+#     }
