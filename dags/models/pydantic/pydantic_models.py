@@ -1,22 +1,22 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List
 from datetime import datetime
 from enum import Enum
-from .pydantic.users_pydantic import (
+from .users_pydantic import (
     User,
     UserProfile,
     UserSettings,
     UserPrivacy,
     UserStatusModel,
 )
-from .pydantic.groups_pydantic import (
+from .groups_pydantic import (
     Community,
     Group,
     GroupMember,
     CommunityTopic,
     PinnedPost,
 )
-from .pydantic.social_pydantic import (
+from .social_pydantic import (
     Friend,
     Follower,
     Subscription,

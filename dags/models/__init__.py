@@ -2,7 +2,7 @@
 Пакет моделей Pydantic для проекта TMS DE
 """
 
-from .pydantic_models import (
+from .pydantic.pydantic_models import (
     # Enums
     ReactionType,
     PrivacyLevel,
