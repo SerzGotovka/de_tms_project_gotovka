@@ -1,5 +1,6 @@
 import requests
 from airflow.models import Variable # type: ignore
+import time
 
 
 try:
@@ -33,6 +34,11 @@ def send_telegram_message(message):
         if response.status_code == 200:
             print(f"Сообщение успешно отправлено в Telegram: {message[:50]}...")
             return True
+        elif response.status_code == 429:
+                # Получаем время ожидания из ответа
+                retry_after = int(response.json().get('parameters', {}).get('retry_after', 25))
+                print(f"Слишком много запросов. Ожидание {retry_after} секунд перед новой попыткой...")
+                time.sleep(retry_after)
         else:
             print(f"Ошибка при отправке сообщения в Telegram. Статус: {response.status_code}")
             print(f"Ответ: {response.text}")
