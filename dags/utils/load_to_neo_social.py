@@ -1,6 +1,6 @@
-from airflow.models import Variable
+from airflow.models import Variable # type: ignore
 from neo4j import GraphDatabase
-from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.providers.postgres.hooks.postgres import PostgresHook # type: ignore
 import logging
 from typing import List, Dict, Any
 import pandas as pd
