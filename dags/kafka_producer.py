@@ -84,7 +84,7 @@ class KafkaDataProducer:
         photos = generate_photos(num_photos=10, **context)
         for photo in photos:
             self.send_message(
-                topic='photos',
+                topic='media_photos',
                 data=photo,
                 key=photo.get('id', photo.get('user_id'))
             )
@@ -93,7 +93,7 @@ class KafkaDataProducer:
         videos = generate_videos(num_videos=5, **context)
         for video in videos:
             self.send_message(
-                topic='videos',
+                topic='media_videos',
                 data=video,
                 key=video.get('id', video.get('user_id'))
             )
@@ -102,7 +102,7 @@ class KafkaDataProducer:
         albums = generate_albums(num_albums=3, **context)
         for album in albums:
             self.send_message(
-                topic='albums',
+                topic='media_albums',
                 data=album,
                 key=album.get('id', album.get('user_id'))
             )
@@ -143,7 +143,7 @@ class KafkaDataProducer:
         posts = generate_posts(n=10, **context)
         for post in posts:
             self.send_message(
-                topic='posts',
+                topic='content_posts',
                 data=post,
                 key=str(post.get('id', post.get('author_id')))
             )
@@ -152,7 +152,7 @@ class KafkaDataProducer:
         stories = generate_stories(n=5, **context)
         for story in stories:
             self.send_message(
-                topic='stories',
+                topic='content_stories',
                 data=story,
                 key=str(story.get('id', story.get('user_id')))
             )
@@ -161,7 +161,7 @@ class KafkaDataProducer:
         reels = generate_reels(n=5, **context)
         for reel in reels:
             self.send_message(
-                topic='reels',
+                topic='content_reels',
                 data=reel,
                 key=str(reel.get('id', reel.get('user_id')))
             )
@@ -170,7 +170,7 @@ class KafkaDataProducer:
         comments = generate_comments(n=15, **context)
         for comment in comments:
             self.send_message(
-                topic='comments',
+                topic='content_comments',
                 data=comment,
                 key=str(comment.get('id', comment.get('post_id')))
             )
@@ -179,7 +179,7 @@ class KafkaDataProducer:
         replies = generate_replies(n=10, **context)
         for reply in replies:
             self.send_message(
-                topic='replies',
+                topic='content_replies',
                 data=reply,
                 key=str(reply.get('id', reply.get('comment_id')))
             )
@@ -188,7 +188,7 @@ class KafkaDataProducer:
         likes = generate_likes(n=20, **context)
         for like in likes:
             self.send_message(
-                topic='likes',
+                topic='content_likes',
                 data=like,
                 key=str(like.get('id', like.get('post_id')))
             )
@@ -197,7 +197,7 @@ class KafkaDataProducer:
         reactions = generate_reactions(n=15, **context)
         for reaction in reactions:
             self.send_message(
-                topic='reactions',
+                topic='content_reactions',
                 data=reaction,
                 key=str(reaction.get('id', reaction.get('post_id')))
             )
@@ -206,7 +206,7 @@ class KafkaDataProducer:
         shares = generate_shares(n=8, **context)
         for share in shares:
             self.send_message(
-                topic='shares',
+                topic='content_shares',
                 data=share,
                 key=str(share.get('id', share.get('post_id')))
             )

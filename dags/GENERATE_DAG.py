@@ -3,17 +3,25 @@ from airflow.operators.python import PythonOperator  # type: ignore
 from airflow.utils.task_group import TaskGroup  # type: ignore
 from datetime import datetime, timedelta
 import logging
+import os
 from generate_data.generate_users import gen_user, gen_user_profile, gen_user_settings, gen_user_privacy, gen_user_status
 from generate_data.generate_group import generate_communities, generate_groups, generate_group_members, generate_community_topics, generate_pinned_posts
-from generate_data.generate_social_links import generate_friends, generate_followers, generate_subscriptions, generate_blocks, generate_mutes, generate_close_friends
+from generate_data.generate_social_links import generate_friends, generate_followers, generate_subscriptions, generate_blocks, generate_mutes, generate_close_friends, generate_social_data
 from generate_data.generate_media import generate_photos, generate_videos, generate_albums
 from generate_data.generate_content import generate_posts, generate_stories, generate_reels, generate_comments, generate_replies, generate_likes, generate_reactions, generate_shares
-from utils.function_kafka import create_kafka_topics
-from kafka_producer import send_media_to_kafka, send_content_to_kafka
-from utils.tg_bot import success_callback, on_failure_callback
 
+
+from utils.tg_bot import success_callback, on_failure_callback
+from utils.function_minio import save_csv_file
+from my_producer_media import my_producer_media, my_producer_albums
+from my_producer_content import (
+    my_producer_posts, my_producer_stories, my_producer_reels,
+    my_producer_comments, my_producer_replies, my_producer_likes,
+    my_producer_reactions, my_producer_shares
+)
 
 logger = logging.getLogger(__name__)
+
 
 default_args = {
     'retries': 3,  # попробовать 3 раза при неудаче
@@ -26,18 +34,12 @@ default_args = {
 
 with DAG(
     dag_id="total_generate_data",    
-    tags=["generate", "load_to_kafka", "save_csv"],
-    description="Даг для генерации всех данных",
+    tags=["generate", "save_csv_to_minio", "save_to_kafka"],
+    description="Даг для генерации данных пользователей, групп и социальных связей. Сохраняет данные в CSV файлы в MinIO и отправляет(content и media) в Kafka",
     default_args=default_args
     
 ) as dag:
-    create_kafka_topics_task = PythonOperator(
-        task_id="create_kafka_topics",
-        python_callable=create_kafka_topics,
-        provide_context=True,
-        on_success_callback=success_callback,
-        on_failure_callback=on_failure_callback,
-    )
+    
 
     with TaskGroup(group_id="generate_data_group") as generate_data_group:
         ################################## ТАСКИ ДЛЯ USER ######################
@@ -246,6 +248,15 @@ with DAG(
             on_failure_callback=on_failure_callback,
         )
 
+        gen_social_data_task = PythonOperator(
+            task_id="gen_social_data",
+            python_callable=generate_social_data,
+            provide_context=True,
+            on_success_callback=success_callback,
+            on_failure_callback=on_failure_callback,
+        )
+
+
         # ---------- Зависимости ----------
         (
             gen_users_task
@@ -285,26 +296,156 @@ with DAG(
         gen_stories_task
         gen_reels_task
 
-    # Создаем задачи Kafka вне группы
-    send_media_to_kafka_task = PythonOperator(
-        task_id="send_media_to_kafka",
-        python_callable=send_media_to_kafka,
+    # Сохранение групп после генерации всех групповых данных
+    [
+        gen_communities_task,
+        gen_members_task,
+        gen_topics_task,
+        gen_pinned_posts_task,
+    ] 
+
+    # Сохранение социальных данных после генерации всех социальных связей
+    [
+        gen_friends_task,
+        gen_followers_task,
+        gen_subscriptions_task,
+        gen_blocks_task,
+        gen_mutes_task,
+        gen_close_friends_task,
+        gen_social_data_task,
+    ] 
+    
+    # === ЗАДАЧИ KAFKA ===
+    
+    # Задача для отправки медиа данных в Kafka
+    send_photos_task = PythonOperator(
+        task_id='send_photos_to_kafka',
+        python_callable=my_producer_media,
+        op_kwargs={'media_type': 'photos'},
         provide_context=True,
+        dag=dag,
         on_success_callback=success_callback,
         on_failure_callback=on_failure_callback,
     )
 
-    send_content_to_kafka_task = PythonOperator(
-        task_id="send_content_to_kafka",
-        python_callable=send_content_to_kafka,
+    send_videos_task = PythonOperator(
+        task_id='send_videos_to_kafka',
+        python_callable=my_producer_media,
+        op_kwargs={'media_type': 'videos'},
         provide_context=True,
+        dag=dag,
         on_success_callback=success_callback,
         on_failure_callback=on_failure_callback,
     )
 
-    # Настраиваем зависимости
-    (
-        create_kafka_topics_task
-        >> generate_data_group
-        >> [send_media_to_kafka_task, send_content_to_kafka_task]
+    send_albums_task = PythonOperator(
+        task_id='send_albums_to_kafka',
+        python_callable=my_producer_albums,
+        op_kwargs={'media_type': 'albums'},
+        provide_context=True,
+        dag=dag,
+        on_success_callback=success_callback,
+        on_failure_callback=on_failure_callback,
     )
+
+    # Задача для отправки постов в Kafka
+    send_posts_task = PythonOperator(
+        task_id='send_posts_to_kafka',
+        python_callable=my_producer_posts,
+        provide_context=True,
+        dag=dag,
+        on_success_callback=success_callback,
+        on_failure_callback=on_failure_callback,
+    )
+
+    # Задача для отправки историй в Kafka
+    send_stories_task = PythonOperator(
+        task_id='send_stories_to_kafka',
+        python_callable=my_producer_stories,
+        provide_context=True,
+        dag=dag,
+        on_success_callback=success_callback,
+        on_failure_callback=on_failure_callback,
+    )
+
+    # Задача для отправки reels в Kafka
+    send_reels_task = PythonOperator(
+        task_id='send_reels_to_kafka',
+        python_callable=my_producer_reels,
+        provide_context=True,
+        dag=dag,
+        on_success_callback=success_callback,
+        on_failure_callback=on_failure_callback,
+    )
+
+    # Задача для отправки комментариев в Kafka
+    send_comments_task = PythonOperator(
+        task_id='send_comments_to_kafka',
+        python_callable=my_producer_comments,
+        provide_context=True,
+        dag=dag,
+        on_success_callback=success_callback,
+        on_failure_callback=on_failure_callback,
+    )
+
+    # Задача для отправки ответов на комментарии в Kafka
+    send_replies_task = PythonOperator(
+        task_id='send_replies_to_kafka',
+        python_callable=my_producer_replies,
+        provide_context=True,
+        dag=dag,
+        on_success_callback=success_callback,
+        on_failure_callback=on_failure_callback,
+    )
+
+    # Задача для отправки лайков в Kafka
+    send_likes_task = PythonOperator(
+        task_id='send_likes_to_kafka',
+        python_callable=my_producer_likes,
+        provide_context=True,
+        dag=dag,
+        on_success_callback=success_callback,
+        on_failure_callback=on_failure_callback,
+    )
+
+    # Задача для отправки реакций в Kafka
+    send_reactions_task = PythonOperator(
+        task_id='send_reactions_to_kafka',
+        python_callable=my_producer_reactions,
+        provide_context=True,
+        dag=dag,
+        on_success_callback=success_callback,
+        on_failure_callback=on_failure_callback,
+    )
+
+    # Задача для отправки репостов в Kafka
+    send_shares_task = PythonOperator(
+        task_id='send_shares_to_kafka',
+        python_callable=my_producer_shares,
+        provide_context=True,
+        dag=dag,
+        on_success_callback=success_callback,
+        on_failure_callback=on_failure_callback,
+    )
+    
+    # === ЗАВИСИМОСТИ KAFKA ===
+    
+    # Медиа данные зависят от генерации медиа
+    gen_photos_task >> send_photos_task
+    gen_videos_task >> send_videos_task
+    gen_albums_task >> send_albums_task
+    
+    # Контент зависит от генерации контента
+    gen_posts_task >> send_posts_task
+    gen_stories_task >> send_stories_task
+    gen_reels_task >> send_reels_task
+    
+    # Комментарии и ответы зависят от постов
+    send_posts_task >> send_comments_task
+    send_comments_task >> send_replies_task
+    
+    # Лайки, реакции и репосты зависят от постов
+    send_posts_task >> send_likes_task
+    send_posts_task >> send_reactions_task
+    send_posts_task >> send_shares_task
+

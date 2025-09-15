@@ -3,9 +3,10 @@ import random
 import uuid
 from typing import List, Dict
 import logging
-from utils.function_minio import save_csv_file
+from utils.function_minio import save_csv_file, save_data_directly_to_minio
 from utils.config_generate import (temp_file_path_friends, temp_file_path_followers, temp_file_path_subscriptions,
-                                   temp_file_path_blocks, temp_file_path_mutes, temp_file_path_close_friends)
+                                   temp_file_path_blocks, temp_file_path_mutes, temp_file_path_close_friends, temp_file_path_social_groups)
+from datetime import datetime
 
 fake = Faker()
 
@@ -39,9 +40,22 @@ def generate_friends(max_friends=3, **context) -> List[Dict]:
     logging.info(f"Сгенерировано дружеских связей: {len(friends)}")
     logging.info(friends)
 
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_friends_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=friends,
+            filename=filename,
+            folder="/social_friends/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} дружеских связей в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи дружеских связей в MinIO: {e}")
+        raise
+
     context["task_instance"].xcom_push(key="friends", value=friends)
     context["task_instance"].xcom_push(key="num_friends", value=num_friends)
-    save_csv_file(temp_file_path_friends, friends)
     return friends
 
 
@@ -73,9 +87,22 @@ def generate_followers(max_followers=3, **context) -> List[Dict]:
     logging.info(f"Сгенерировано подписчиков: {len(followers)}")
     logging.info(followers)
 
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_followers_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=followers,
+            filename=filename,
+            folder="/social_followers/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} подписчиков в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи подписчиков в MinIO: {e}")
+        raise
+
     context["task_instance"].xcom_push(key="followers", value=followers)
     context["task_instance"].xcom_push(key="num_followers", value=num_followers)
-    save_csv_file(temp_file_path_followers, followers)
     return followers
 
 
@@ -107,9 +134,22 @@ def generate_subscriptions(max_subscriptions=3, **context) -> List[Dict]:
     logging.info(f"Сгенерировано подписок: {len(subscriptions)}")
     logging.info(subscriptions)
 
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_subscriptions_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=subscriptions,
+            filename=filename,
+            folder="/social_subscriptions/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} подписок в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи подписок в MinIO: {e}")
+        raise
+
     context["task_instance"].xcom_push(key="subscriptions", value=subscriptions)
     context["task_instance"].xcom_push(key="num_subscriptions", value=num_subscriptions)
-    save_csv_file(temp_file_path_subscriptions, subscriptions)
     return subscriptions
 
 
@@ -144,10 +184,23 @@ def generate_blocks(max_blocks=2, **context) -> List[Dict]:
     logging.info(f"Сгенерировано блокировок: {len(blocks)}")
     logging.info(blocks)
 
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_blocks_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=blocks,
+            filename=filename,
+            folder="/social_blocks/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} блокировок в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи блокировок в MinIO: {e}")
+        raise
+
     context["task_instance"].xcom_push(key="blocks", value=blocks)
     context["task_instance"].xcom_push(key="num_blocks", value=num_blocks)
     
-    save_csv_file(temp_file_path_blocks, blocks)
     return blocks
 
 
@@ -182,9 +235,22 @@ def generate_mutes(max_mutes=2, **context) -> List[Dict]:
     logging.info(f"Сгенерировано отключенных уведомлений: {len(mutes)}")
     logging.info(mutes)
 
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_mutes_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=mutes,
+            filename=filename,
+            folder="/social_mutes/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} отключенных уведомлений в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи отключенных уведомлений в MinIO: {e}")
+        raise
+
     context["task_instance"].xcom_push(key="mutes", value=mutes)
     context["task_instance"].xcom_push(key="num_mutes", value=num_mutes)
-    save_csv_file(temp_file_path_mutes, mutes)
     return mutes
 
 
@@ -208,10 +274,125 @@ def generate_close_friends(**context) -> List[Dict]:
     logging.info(f"Сгенерировано близких друзей: {len(close_friends)}")
     logging.info(close_friends)
 
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_close_friends_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=close_friends,
+            filename=filename,
+            folder="/social_close_friends/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} близких друзей в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи близких друзей в MinIO: {e}")
+        raise
+
     context["task_instance"].xcom_push(key="close_friends", value=close_friends)
     context["task_instance"].xcom_push(key="num_close_friends", value=num_close_friends)
-    save_csv_file(temp_file_path_close_friends, close_friends)
     return close_friends
+
+
+def generate_social_data(**context) -> List[Dict]:
+    """Генерация общего файла социальных данных"""
+    from datetime import datetime
+    
+    # Получаем все социальные данные из XCom
+    friends = context["task_instance"].xcom_pull(key="friends", task_ids="generate_data_group.gen_friends")
+    followers = context["task_instance"].xcom_pull(key="followers", task_ids="generate_data_group.gen_followers")
+    subscriptions = context["task_instance"].xcom_pull(key="subscriptions", task_ids="generate_data_group.gen_subscriptions")
+    blocks = context["task_instance"].xcom_pull(key="blocks", task_ids="generate_data_group.gen_blocks")
+    mutes = context["task_instance"].xcom_pull(key="mutes", task_ids="generate_data_group.gen_mutes")
+    close_friends = context["task_instance"].xcom_pull(key="close_friends", task_ids="generate_data_group.gen_close_friends")
+    
+    # Объединяем все социальные данные
+    social_data = []
+    
+    # Добавляем друзей
+    if friends:
+        for friend in friends:
+            social_data.append({
+                "id": friend["id"],
+                "user_id": friend["user_id"],
+                "target_id": friend["friend_id"],
+                "relationship_type": "friend",
+                "created_at": friend["created_at"],
+                "status": friend["status"],
+                "is_best_friend": friend["is_best_friend"]
+            })
+    
+    # Добавляем подписчиков
+    if followers:
+        for follower in followers:
+            social_data.append({
+                "id": follower["id"],
+                "user_id": follower["user_id"],
+                "target_id": follower["follower_id"],
+                "relationship_type": "follower",
+                "created_at": follower["followed_at"],
+                "status": "active" if follower["is_active"] else "inactive",
+                "is_best_friend": False
+            })
+    
+    # Добавляем подписки
+    if subscriptions:
+        for subscription in subscriptions:
+            social_data.append({
+                "id": subscription["id"],
+                "user_id": subscription["user_id"],
+                "target_id": subscription["subscribed_to"],
+                "relationship_type": "subscription",
+                "created_at": subscription["subscribed_at"],
+                "status": "active" if subscription["is_active"] else "inactive",
+                "is_best_friend": False
+            })
+    
+    # Добавляем блокировки
+    if blocks:
+        for block in blocks:
+            social_data.append({
+                "id": block["id"],
+                "user_id": block["user_id"],
+                "target_id": block["blocked_id"],
+                "relationship_type": "block",
+                "created_at": block["blocked_at"],
+                "status": "active" if block["is_active"] else "inactive",
+                "is_best_friend": False
+            })
+    
+    # Добавляем отключенные уведомления
+    if mutes:
+        for mute in mutes:
+            social_data.append({
+                "id": mute["id"],
+                "user_id": mute["user_id"],
+                "target_id": mute["muted_id"],
+                "relationship_type": "mute",
+                "created_at": mute["muted_at"],
+                "status": "active" if mute["is_active"] else "inactive",
+                "is_best_friend": False
+            })
+    
+    # Добавляем близких друзей
+    if close_friends:
+        for close_friend in close_friends:
+            social_data.append({
+                "id": close_friend["id"],
+                "user_id": close_friend["user_id"],
+                "target_id": close_friend["close_friend_id"],
+                "relationship_type": "close_friend",
+                "created_at": close_friend["added_at"],
+                "status": "active" if close_friend["is_active"] else "inactive",
+                "is_best_friend": True
+            })
+    
+    num_social = len(social_data)
+    logging.info(f"Сгенерировано социальных связей: {len(social_data)}")
+    
+    context["task_instance"].xcom_push(key="social_data", value=social_data)
+    context["task_instance"].xcom_push(key="num_social", value=num_social)
+    
+    return social_data
 
 
 

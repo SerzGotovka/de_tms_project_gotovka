@@ -12,9 +12,13 @@ fake = Faker()
 
 def generate_posts(n=5, **context) -> List[Dict]:
     """Генерация постов"""
+    # Пытаемся получить пользователей из XCom, если не получается - генерируем самостоятельно
     users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     if not users:
-        raise ValueError("Не удалось получить данные пользователей из XCom")
+        # Если нет данных в XCom, генерируем пользователей самостоятельно
+        from generate_data.generate_users import gen_user
+        users = gen_user(n=50, **context)
+    
     user_ids = [u["id"] for u in users]
     
     posts = []
@@ -36,9 +40,13 @@ def generate_posts(n=5, **context) -> List[Dict]:
 
 def generate_stories(n=5, **context) -> List[Dict]:
     """Генерация историй"""
+    # Пытаемся получить пользователей из XCom, если не получается - генерируем самостоятельно
     users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     if not users:
-        raise ValueError("Не удалось получить данные пользователей из XCom")
+        # Если нет данных в XCom, генерируем пользователей самостоятельно
+        from generate_data.generate_users import gen_user
+        users = gen_user(n=50, **context)
+    
     user_ids = [u["id"] for u in users]
     
     stories = []
@@ -58,9 +66,13 @@ def generate_stories(n=5, **context) -> List[Dict]:
 
 def generate_reels(n=5, **context) -> List[Dict]:
     """Генерация Reels"""
+    # Пытаемся получить пользователей из XCom, если не получается - генерируем самостоятельно
     users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     if not users:
-        raise ValueError("Не удалось получить данные пользователей из XCom")
+        # Если нет данных в XCom, генерируем пользователей самостоятельно
+        from generate_data.generate_users import gen_user
+        users = gen_user(n=50, **context)
+    
     user_ids = [u["id"] for u in users]
     
     reels = []
@@ -81,15 +93,20 @@ def generate_reels(n=5, **context) -> List[Dict]:
 
 def generate_comments(n=10, **context) -> List[Dict]:
     """Генерация комментариев"""
-
+    # Пытаемся получить пользователей из XCom, если не получается - генерируем самостоятельно
     users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     if not users:
-        raise ValueError("Не удалось получить данные пользователей из XCom")
+        # Если нет данных в XCom, генерируем пользователей самостоятельно
+        from generate_data.generate_users import gen_user
+        users = gen_user(n=50, **context)
+    
     user_ids = [u["id"] for u in users]
     
+    # Пытаемся получить посты из XCom, если не получается - генерируем самостоятельно
     posts = context["task_instance"].xcom_pull(key="posts", task_ids="generate_data_group.gen_posts")
     if not posts:
-        raise ValueError("Не удалось получить данные постов из XCom")
+        # Если нет данных в XCom, генерируем посты самостоятельно
+        posts = generate_posts(n=10, **context)
     
     comments = []
     for i in range(n):
@@ -109,14 +126,20 @@ def generate_comments(n=10, **context) -> List[Dict]:
 
 def generate_replies(n=10, **context) -> List[Dict]:
     """Генерация ответов на комментарии"""
+    # Пытаемся получить пользователей из XCom, если не получается - генерируем самостоятельно
     users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     if not users:
-        raise ValueError("Не удалось получить данные пользователей из XCom")
+        # Если нет данных в XCom, генерируем пользователей самостоятельно
+        from generate_data.generate_users import gen_user
+        users = gen_user(n=50, **context)
+    
     user_ids = [u["id"] for u in users]
     
+    # Пытаемся получить комментарии из XCom, если не получается - генерируем самостоятельно
     comments = context["task_instance"].xcom_pull(key="comments", task_ids="generate_data_group.gen_comments")
     if not comments:
-        raise ValueError("Не удалось получить данные комментариев из XCom")
+        # Если нет данных в XCom, генерируем комментарии самостоятельно
+        comments = generate_comments(n=15, **context)
     
     replies = []
     for i in range(n):
@@ -136,14 +159,20 @@ def generate_replies(n=10, **context) -> List[Dict]:
 
 def generate_likes(n=20, **context) -> List[Dict]:
     """Генерация лайков"""
+    # Пытаемся получить пользователей из XCom, если не получается - генерируем самостоятельно
     users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     if not users:
-        raise ValueError("Не удалось получить данные пользователей из XCom")
+        # Если нет данных в XCom, генерируем пользователей самостоятельно
+        from generate_data.generate_users import gen_user
+        users = gen_user(n=50, **context)
+    
     user_ids = [u["id"] for u in users]
     
+    # Пытаемся получить посты из XCom, если не получается - генерируем самостоятельно
     posts = context["task_instance"].xcom_pull(key="posts", task_ids="generate_data_group.gen_posts")
     if not posts:
-        raise ValueError("Не удалось получить данные постов из XCom")
+        # Если нет данных в XCom, генерируем посты самостоятельно
+        posts = generate_posts(n=10, **context)
     
     likes = []
     for i in range(n):
@@ -162,14 +191,20 @@ def generate_likes(n=20, **context) -> List[Dict]:
 
 def generate_reactions(n=15, **context) -> List[Dict]:
     """Генерация реакций"""
+    # Пытаемся получить пользователей из XCom, если не получается - генерируем самостоятельно
     users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     if not users:
-        raise ValueError("Не удалось получить данные пользователей из XCom")
+        # Если нет данных в XCom, генерируем пользователей самостоятельно
+        from generate_data.generate_users import gen_user
+        users = gen_user(n=50, **context)
+    
     user_ids = [u["id"] for u in users]
     
+    # Пытаемся получить посты из XCom, если не получается - генерируем самостоятельно
     posts = context["task_instance"].xcom_pull(key="posts", task_ids="generate_data_group.gen_posts")
     if not posts:
-        raise ValueError("Не удалось получить данные постов из XCom")
+        # Если нет данных в XCom, генерируем посты самостоятельно
+        posts = generate_posts(n=10, **context)
     
     reactions = []
     for i in range(n):
@@ -189,14 +224,20 @@ def generate_reactions(n=15, **context) -> List[Dict]:
 
 def generate_shares(n=10, **context) -> List[Dict]:
     """Генерация репостов"""
+    # Пытаемся получить пользователей из XCom, если не получается - генерируем самостоятельно
     users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
     if not users:
-        raise ValueError("Не удалось получить данные пользователей из XCom")
+        # Если нет данных в XCom, генерируем пользователей самостоятельно
+        from generate_data.generate_users import gen_user
+        users = gen_user(n=50, **context)
+    
     user_ids = [u["id"] for u in users]
     
+    # Пытаемся получить посты из XCom, если не получается - генерируем самостоятельно
     posts = context["task_instance"].xcom_pull(key="posts", task_ids="generate_data_group.gen_posts")
     if not posts:
-        raise ValueError("Не удалось получить данные постов из XCom")
+        # Если нет данных в XCom, генерируем посты самостоятельно
+        posts = generate_posts(n=10, **context)
     
     shares = []
     for i in range(n):
@@ -212,29 +253,3 @@ def generate_shares(n=10, **context) -> List[Dict]:
     context["task_instance"].xcom_push(key="num_shares", value=len(shares))
     return shares
 
-
-# def generate_all_data(users: List[Dict]) -> Dict[str, List[Dict]]:
-#     """Финальная генерация всех данных"""
-#     user_ids = [user['id'] for user in users]
-
-    
-#     posts = generate_posts(user_ids)
-#     stories = generate_stories(user_ids)
-#     reels = generate_reels(user_ids)
-#     comments = generate_comments(user_ids, posts)
-#     replies = generate_replies(user_ids, comments)
-#     likes = generate_likes(user_ids, posts)
-#     reactions = generate_reactions(user_ids, posts)
-#     shares = generate_shares(user_ids, posts)
-
-#     # 3. Возвращаем только нужные структуры (без пользователей!)
-#     return {
-#         'posts': posts,
-#         'stories': stories,
-#         'reels': reels,
-#         'comments': comments,
-#         'replies': replies,
-#         'likes': likes,
-#         'reactions': reactions,
-#         'shares': shares
-#     }

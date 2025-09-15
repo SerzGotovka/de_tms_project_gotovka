@@ -1,7 +1,7 @@
--- Создание таблиц для пользователей в схеме raw
+CREATE SCHEMA IF NOT EXISTS dds;
 
 -- Таблица пользователей
-CREATE TABLE IF NOT EXISTS raw.users (
+CREATE TABLE IF NOT EXISTS dds.users (
     id UUID PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS raw.users (
 );
 
 -- Таблица профилей пользователей
-CREATE TABLE IF NOT EXISTS raw.user_profiles (
+CREATE TABLE IF NOT EXISTS dds.user_profiles (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
     first_name VARCHAR(255) NOT NULL,
@@ -29,12 +29,13 @@ CREATE TABLE IF NOT EXISTS raw.user_profiles (
     gender VARCHAR(20) NOT NULL,
     badges TEXT[], -- Массив строк для бейджей
     updated_at VARCHAR(50) NOT NULL,
-    loaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    loaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES dds.users(id)
 );
 
 
 -- Таблица настроек пользователей
-CREATE TABLE IF NOT EXISTS raw.user_settings (
+CREATE TABLE IF NOT EXISTS dds.user_settings (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
     language VARCHAR(10) NOT NULL,
@@ -47,12 +48,13 @@ CREATE TABLE IF NOT EXISTS raw.user_settings (
     auto_save_drafts BOOLEAN NOT NULL,
     created_at VARCHAR(50) NOT NULL,
     updated_at VARCHAR(50) NOT NULL,
-    loaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    loaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES dds.users(id)
 );
 
 
 -- Таблица настроек приватности пользователей
-CREATE TABLE IF NOT EXISTS raw.user_privacy (
+CREATE TABLE IF NOT EXISTS dds.user_privacy (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
     profile_visibility VARCHAR(20) NOT NULL,
@@ -66,12 +68,13 @@ CREATE TABLE IF NOT EXISTS raw.user_privacy (
     show_online_status BOOLEAN NOT NULL,
     created_at VARCHAR(50) NOT NULL,
     updated_at VARCHAR(50) NOT NULL,
-    loaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    loaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES dds.users(id)
 );
 
 
 -- Таблица статусов пользователей
-CREATE TABLE IF NOT EXISTS raw.user_status (
+CREATE TABLE IF NOT EXISTS dds.user_status (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
     status VARCHAR(20) NOT NULL,
@@ -80,6 +83,7 @@ CREATE TABLE IF NOT EXISTS raw.user_status (
     is_online BOOLEAN NOT NULL,
     created_at VARCHAR(50) NOT NULL,
     updated_at VARCHAR(50) NOT NULL,
-    loaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    loaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES dds.users(id)
 );
 

@@ -91,6 +91,7 @@ networks:
 services:
   postgres:
     image: postgres:13
+    container_name: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -103,7 +104,7 @@ services:
       retries: 5
       start_period: 5s
     ports:
-      - "5432:5432"
+      - "5439:5432"
     restart: always
 
   redis:
@@ -181,9 +182,9 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
     ports:
-      - "2181:2181"
+      - "12181:2181"
     networks:
-      - kafka-network
+      - kafka-network 
 
   kafka:
     image: confluentinc/cp-kafka:7.6.1

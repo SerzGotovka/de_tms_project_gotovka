@@ -45,15 +45,15 @@ temp_file_path_groups = f'/opt/airflow/dags/save_data/groups/data_groups_{dateti
 temp_file_path_social = f'/opt/airflow/dags/save_data/social/data_social_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
 
 # Пути для временного сохранения csv файлов настроек пользователей
-temp_file_path_user_settings = f'/opt/airflow/dags/save_data/users/data_user_settings_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
-temp_file_path_user_privacy = f'/opt/airflow/dags/save_data/users/data_user_privacy_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
-temp_file_path_user_status = f'/opt/airflow/dags/save_data/users/data_user_status_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+temp_file_path_user_settings = f'/opt/airflow/dags/save_data/users/data_users_settings_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+temp_file_path_user_privacy = f'/opt/airflow/dags/save_data/users/data_users_privacy_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+temp_file_path_user_status = f'/opt/airflow/dags/save_data/users/data_users_status_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
 
 # Пути для временного сохранения csv файлов социальных связей
 temp_file_path_friends = f'/opt/airflow/dags/save_data/social/data_friends_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
 temp_file_path_followers = f'/opt/airflow/dags/save_data/social/data_followers_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
 temp_file_path_subscriptions = f'/opt/airflow/dags/save_data/social/data_subscriptions_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
-temp_file_path_groups = f'/opt/airflow/dags/save_data/social/data_groups_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+temp_file_path_social_groups = f'/opt/airflow/dags/save_data/social/data_groups_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
 temp_file_path_blocks = f'/opt/airflow/dags/save_data/social/data_blocks_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
 temp_file_path_mutes = f'/opt/airflow/dags/save_data/social/data_mutes_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
 temp_file_path_close_friends = f'/opt/airflow/dags/save_data/social/data_close_friends_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'

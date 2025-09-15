@@ -5,7 +5,7 @@ import uuid
 from typing import List, Dict
 from utils.config_generate import NUM_COMMUNITIES, NUM_GROUPS, MAX_MEMBERS_PER_GROUP
 import logging
-from utils.function_minio import save_csv_file
+from utils.function_minio import save_csv_file, save_data_directly_to_minio
 from utils.config_generate import (temp_file_path_communities, temp_file_path_community_topics,
                                    temp_file_path_group_members, temp_file_path_pinned_posts, temp_file_path_groups)
 
@@ -31,11 +31,24 @@ def generate_communities(n=NUM_COMMUNITIES, **context) -> List[Dict]:
     logging.info(f"Сгенерировано сообществ: {len(communities)}")
     logging.info(communities)
 
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_communities_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=communities,
+            filename=filename,
+            folder="/groups_communities/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} сообществ в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи сообществ в MinIO: {e}")
+        raise
+
     # communities = generate_communities()
 
     context["task_instance"].xcom_push(key="communities", value=communities)
     context["task_instance"].xcom_push(key="num_communities", value=num_communities)
-    save_csv_file(temp_file_path_communities, communities)
     return communities
 
 
@@ -61,13 +74,25 @@ def generate_groups(n=NUM_GROUPS, **context) -> List[Dict]:
     logging.info(f"Сгенерировано групп: {len(groups)}")
     logging.info(groups)
 
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_groups_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=groups,
+            filename=filename,
+            folder="/groups/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} групп в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи групп в MinIO: {e}")
+        raise
     
     # groups = generate_groups(user_ids)
 
     context["task_instance"].xcom_push(key="groups", value=groups)
     context["task_instance"].xcom_push(key="num_groups", value=num_groups)
     
-    save_csv_file(temp_file_path_groups, groups)
     return groups
 
 
@@ -100,12 +125,24 @@ def generate_group_members(n=MAX_MEMBERS_PER_GROUP, **context) -> List[Dict]:
     logging.info(f"Сгенерировано участников групп: {len(members)}")
     logging.info(members)
 
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_group_members_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=members,
+            filename=filename,
+            folder="/group_members/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} участников групп в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи участников групп в MinIO: {e}")
+        raise
     
     # members = generate_group_members(group_ids, user_ids)
 
     context["task_instance"].xcom_push(key="group_members", value=members)
     context["task_instance"].xcom_push(key="num_group_members", value=num_group_members)
-    save_csv_file(temp_file_path_group_members, members)
     return members
 
 
@@ -134,12 +171,24 @@ def generate_community_topics(n=3, **context) -> List[Dict]:
     logging.info(f"Сгенерировано тем для сообществ: {len(topics)}")
     logging.info(topics)
 
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_community_topics_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=topics,
+            filename=filename,
+            folder="/community_topics/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} тем сообществ в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи тем сообществ в MinIO: {e}")
+        raise
     
     # topics = generate_community_topics(communities)
     context["task_instance"].xcom_push(key="num_community_topics", value=num_community_topics)
     context["task_instance"].xcom_push(key="community_topics", value=topics)
     
-    save_csv_file(temp_file_path_community_topics, topics)
     return topics
 
 
@@ -189,10 +238,22 @@ def generate_pinned_posts(n=5, **context) -> List[Dict]:
     logging.info(f"Сгенерировано закрепленных постов: {len(pinned_posts)}")
     logging.info(pinned_posts)
 
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_pinned_posts_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=pinned_posts,
+            filename=filename,
+            folder="/pinned_posts/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} закрепленных постов в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи закрепленных постов в MinIO: {e}")
+        raise
     
     context["task_instance"].xcom_push(key="pinned_posts", value=pinned_posts)
     context["task_instance"].xcom_push(key="num_pinned_posts", value=num_pinned_posts)
-    save_csv_file(temp_file_path_pinned_posts, pinned_posts)
     return pinned_posts
 
 

@@ -9,9 +9,14 @@ import logging
 fake = Faker()
 
 
-def generate_photos(num_photos: int = 10, **context) -> List[Dict[str, Any]]:
+def generate_photos(num_photos: int = 10, users: List[Dict[str, Any]] = None, **context) -> List[Dict[str, Any]]:
     """Генерация фото"""
-    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    if users is None:
+        users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    
+    if not users:
+        raise ValueError("Список пользователей пуст или None")
+    
     photos = []
     
     for _ in range(num_photos):
@@ -22,7 +27,7 @@ def generate_photos(num_photos: int = 10, **context) -> List[Dict[str, Any]]:
             "filename": fake.file_name(extension="jpg"),
             "url": fake.image_url(width=1920, height=1080),
             "description": fake.sentence(nb_words=6),
-            "uploaded_at": fake.date_between(start_date="-1y", end_date="today"),
+            "uploaded_at": fake.date_between(start_date="-1y", end_date="today").isoformat(),
             "is_private": random.choice([True, False]),
         }
         photos.append(photo)
@@ -38,9 +43,14 @@ def generate_photos(num_photos: int = 10, **context) -> List[Dict[str, Any]]:
     return photos
 
 
-def generate_videos(num_videos: int = 5, **context) -> List[Dict[str, Any]]:
+def generate_videos(num_videos: int = 5, users: List[Dict[str, Any]] = None, **context) -> List[Dict[str, Any]]:
     """Генерация видео"""
-    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    if users is None:
+        users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    
+    if not users:
+        raise ValueError("Список пользователей пуст или None")
+    
     videos = []
     for _ in range(num_videos):
         user = random.choice(users)
@@ -51,7 +61,7 @@ def generate_videos(num_videos: int = 5, **context) -> List[Dict[str, Any]]:
                 "title": fake.sentence(nb_words=4),
                 "url": fake.url() + fake.file_name(extension="mp4"),
                 "duration_seconds": random.randint(10, 300),
-                "uploaded_at": fake.date_between(start_date="-1y", end_date="today"),
+                "uploaded_at": fake.date_between(start_date="-1y", end_date="today").isoformat(),
                 "visibility": random.choice(["public", "private", "unlisted"]),
             }
         )
@@ -63,11 +73,22 @@ def generate_videos(num_videos: int = 5, **context) -> List[Dict[str, Any]]:
     return videos
 
 
-def generate_albums(num_albums: int = 3, **context) -> List[Dict[str, Any]]:
+def generate_albums(num_albums: int = 3, users: List[Dict[str, Any]] = None, photos: List[Dict[str, Any]] = None, videos: List[Dict[str, Any]] = None, **context) -> List[Dict[str, Any]]:
     """Генерация альбомов"""
-    users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
-    photos = context["task_instance"].xcom_pull(key="photos", task_ids="generate_data_group.gen_photos")
-    videos = context["task_instance"].xcom_pull(key="videos", task_ids="generate_data_group.gen_videos")
+    if users is None:
+        users = context["task_instance"].xcom_pull(key="users", task_ids="generate_data_group.gen_users")
+    if photos is None:
+        photos = context["task_instance"].xcom_pull(key="photos", task_ids="generate_data_group.gen_photos")
+    if videos is None:
+        videos = context["task_instance"].xcom_pull(key="videos", task_ids="generate_data_group.gen_videos")
+    
+    if not users:
+        raise ValueError("Список пользователей пуст или None")
+    if not photos:
+        raise ValueError("Список фотографий пуст или None")
+    if not videos:
+        raise ValueError("Список видео пуст или None")
+    
     albums = []
     for _ in range(num_albums):
         user = random.choice(users)
@@ -80,7 +101,7 @@ def generate_albums(num_albums: int = 3, **context) -> List[Dict[str, Any]]:
                 "user_id": user["id"],  # Используем id пользователя
                 "title": fake.sentence(nb_words=3),
                 "description": fake.paragraph(nb_sentences=2),
-                "created_at": fake.date_between(start_date="-1y", end_date="today"),
+                "created_at": fake.date_between(start_date="-1y", end_date="today").isoformat(),
                 "media_ids": selected_photos + selected_videos,  # Список ID медиафайлов
             }
         )

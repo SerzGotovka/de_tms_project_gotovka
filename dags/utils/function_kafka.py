@@ -11,21 +11,21 @@ def create_kafka_topics(**context):
 
         # Топики для медиа данных
         media_topics = [
-            NewTopic(topic="photos", num_partitions=3, replication_factor=1),
-            NewTopic(topic="videos", num_partitions=3, replication_factor=1),
-            NewTopic(topic="albums", num_partitions=3, replication_factor=1),
+            NewTopic(topic="media_photos", num_partitions=3, replication_factor=1),
+            NewTopic(topic="media_videos", num_partitions=3, replication_factor=1),
+            NewTopic(topic="media_albums", num_partitions=3, replication_factor=1),
         ]
 
         # Топики для контента
         content_topics = [
-            NewTopic(topic="posts", num_partitions=3, replication_factor=1),
-            NewTopic(topic="stories", num_partitions=3, replication_factor=1),
-            NewTopic(topic="reels", num_partitions=3, replication_factor=1),
-            NewTopic(topic="comments", num_partitions=3, replication_factor=1),
-            NewTopic(topic="replies", num_partitions=3, replication_factor=1),
-            NewTopic(topic="likes", num_partitions=3, replication_factor=1),
-            NewTopic(topic="reactions", num_partitions=3, replication_factor=1),
-            NewTopic(topic="shares", num_partitions=3, replication_factor=1),
+            NewTopic(topic="content_posts", num_partitions=3, replication_factor=1),
+            NewTopic(topic="content_stories", num_partitions=3, replication_factor=1),
+            NewTopic(topic="content_reels", num_partitions=3, replication_factor=1),
+            NewTopic(topic="content_comments", num_partitions=3, replication_factor=1),
+            NewTopic(topic="content_replies", num_partitions=3, replication_factor=1),
+            NewTopic(topic="content_likes", num_partitions=3, replication_factor=1),
+            NewTopic(topic="content_reactions", num_partitions=3, replication_factor=1),
+            NewTopic(topic="content_shares", num_partitions=3, replication_factor=1),
         ]
 
         # Создание топиков
