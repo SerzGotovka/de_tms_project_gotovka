@@ -224,22 +224,6 @@ def success_callback(context):
             print(f"Не удалось отправить уведомление для задачи {task_id}")
 
     
-    # Задачи Kafka
-    elif task_id == 'send_media_to_kafka':
-        message = "Медиа данные успешно отправлены в Kafka"
-        if not send_telegram_message(message):
-            print(f"Не удалось отправить уведомление для задачи {task_id}")
-    
-    elif task_id == 'send_content_to_kafka':
-        message = "Контент данные успешно отправлены в Kafka"
-        if not send_telegram_message(message):
-            print(f"Не удалось отправить уведомление для задачи {task_id}")
-    
-    # Задача создания топиков Kafka
-    elif task_id == 'create_kafka_topics':
-        message = "Топики Kafka успешно созданы"
-        if not send_telegram_message(message):
-            print(f"Не удалось отправить уведомление для задачи {task_id}")
     
     else:
         message = f"Задача {task_id} завершена успешно."

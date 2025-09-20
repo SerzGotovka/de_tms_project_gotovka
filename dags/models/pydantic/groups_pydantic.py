@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from enum import Enum
+from uuid import UUID
 
 
 # ==================== ENUMS ====================
@@ -26,7 +27,7 @@ class GroupRole(str, Enum):
 class Community(BaseModel):
     """Модель сообщества"""
 
-    id: str = Field(..., description="Уникальный идентификатор сообщества")
+    id: UUID = Field(..., description="Уникальный идентификатор сообщества")
     name: str = Field(..., description="Название сообщества")
     description: str = Field(..., description="Описание сообщества")
     created_at: str = Field(..., description="Дата создания")
@@ -47,8 +48,8 @@ class Community(BaseModel):
 class Group(BaseModel):
     """Модель группы"""
 
-    id: str = Field(..., description="Уникальный идентификатор группы")
-    owner_id: str = Field(..., description="ID владельца группы")
+    id: UUID = Field(..., description="Уникальный идентификатор группы")
+    owner_id: UUID = Field(..., description="ID владельца группы")
     name: str = Field(..., description="Название группы")
     description: str = Field(..., description="Описание группы")
     privacy: GroupPrivacy = Field(..., description="Приватность группы")
@@ -70,9 +71,9 @@ class Group(BaseModel):
 class GroupMember(BaseModel):
     """Модель участника группы"""
 
-    id: str = Field(..., description="Уникальный идентификатор участника")
-    group_id: str = Field(..., description="ID группы")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор участника")
+    group_id: UUID = Field(..., description="ID группы")
+    user_id: UUID = Field(..., description="ID пользователя")
     joined_at: str = Field(..., description="Дата присоединения")
     role: GroupRole = Field(..., description="Роль в группе")
 
@@ -91,8 +92,8 @@ class GroupMember(BaseModel):
 class CommunityTopic(BaseModel):
     """Модель темы сообщества"""
 
-    id: str = Field(..., description="Уникальный идентификатор темы")
-    community_id: str = Field(..., description="ID сообщества")
+    id: UUID = Field(..., description="Уникальный идентификатор темы")
+    community_id: UUID = Field(..., description="ID сообщества")
     title: str = Field(..., description="Заголовок темы")
     description: str = Field(..., description="Описание темы")
     created_at: str = Field(..., description="Дата создания")
@@ -112,10 +113,10 @@ class CommunityTopic(BaseModel):
 class PinnedPost(BaseModel):
     """Модель закрепленного поста"""
 
-    id: str = Field(..., description="Уникальный идентификатор закрепленного поста")
-    community_id: Optional[str] = Field(None, description="ID сообщества")
-    group_id: Optional[str] = Field(None, description="ID группы")
-    author_id: str = Field(..., description="ID автора")
+    id: UUID = Field(..., description="Уникальный идентификатор закрепленного поста")
+    community_id: Optional[UUID] = Field(None, description="ID сообщества")
+    group_id: Optional[UUID] = Field(None, description="ID группы")
+    author_id: UUID = Field(..., description="ID автора")
     content: str = Field(..., description="Содержимое поста")
     pinned_at: str = Field(..., description="Дата закрепления")
     expires_at: str = Field(..., description="Дата истечения")

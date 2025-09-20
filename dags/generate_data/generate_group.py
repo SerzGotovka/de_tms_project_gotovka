@@ -37,7 +37,7 @@ def generate_communities(n=NUM_COMMUNITIES, **context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=communities,
             filename=filename,
-            folder="/groups_communities/",
+            folder="groups_communities/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} сообществ в MinIO")
@@ -80,7 +80,7 @@ def generate_groups(n=NUM_GROUPS, **context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=groups,
             filename=filename,
-            folder="/groups/",
+            folder="groups/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} групп в MinIO")
@@ -131,7 +131,7 @@ def generate_group_members(n=MAX_MEMBERS_PER_GROUP, **context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=members,
             filename=filename,
-            folder="/group_members/",
+            folder="group_members/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} участников групп в MinIO")
@@ -177,7 +177,7 @@ def generate_community_topics(n=3, **context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=topics,
             filename=filename,
-            folder="/community_topics/",
+            folder="community_topics/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} тем сообществ в MinIO")
@@ -244,7 +244,7 @@ def generate_pinned_posts(n=5, **context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=pinned_posts,
             filename=filename,
-            folder="/pinned_posts/",
+            folder="pinned_posts/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} закрепленных постов в MinIO")

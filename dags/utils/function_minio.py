@@ -294,6 +294,53 @@ def parse_badges_string(badges_str: str) -> list:
         return []
 
 
+def parse_media_ids_string(media_ids_str: str) -> list:
+    """
+    Парсит строку media_ids в список UUID.
+    
+    Args:
+        media_ids_str (str): Строка с media_ids (например, "['uuid1', 'uuid2']" или "[]")
+    
+    Returns:
+        list: Список UUID строк
+    """
+    if not media_ids_str or media_ids_str.strip() == '':
+        return []
+    
+    try:
+        # Убираем лишние пробелы и кавычки
+        media_ids_str = media_ids_str.strip()
+        
+        # Если это пустой список
+        if media_ids_str == '[]':
+            return []
+        
+        # Если это строка вида "['uuid1', 'uuid2']"
+        if media_ids_str.startswith('[') and media_ids_str.endswith(']'):
+            # Убираем квадратные скобки
+            media_ids_str = media_ids_str[1:-1]
+            
+            # Разделяем по запятым и очищаем от кавычек
+            media_ids = []
+            for media_id in media_ids_str.split(','):
+                media_id = media_id.strip().strip("'\"")
+                if media_id:
+                    media_ids.append(media_id)
+            return media_ids
+        
+        # Если это просто строка без скобок, разделяем по запятым
+        media_ids = []
+        for media_id in media_ids_str.split(','):
+            media_id = media_id.strip().strip("'\"")
+            if media_id:
+                media_ids.append(media_id)
+        return media_ids
+        
+    except Exception as e:
+        logging.warning(f"Ошибка при парсинге media_ids '{media_ids_str}': {e}")
+        return []
+
+
 def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     """
     Функция для очистки DataFrame от дубликатов и null значений.
@@ -509,6 +556,10 @@ def save_dataframe_to_postgres(
                     # Обрабатываем поле badges если оно есть
                     if 'badges' in row_dict and isinstance(row_dict['badges'], str):
                         row_dict['badges'] = parse_badges_string(row_dict['badges'])
+                    
+                    # Обрабатываем поле media_ids если оно есть
+                    if 'media_ids' in row_dict and isinstance(row_dict['media_ids'], str):
+                        row_dict['media_ids'] = parse_media_ids_string(row_dict['media_ids'])
                     
                     # Валидируем данные через pydantic модель
                     validated_data = pydantic_model_class(**row_dict)

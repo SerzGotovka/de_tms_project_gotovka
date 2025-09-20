@@ -42,7 +42,7 @@ def gen_user(n=NUM_USERS, **context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=users,
             filename=filename,
-            folder="/users/",
+            folder="users/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} пользователей в MinIO")
@@ -92,7 +92,7 @@ def gen_user_profile(**context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=profiles,
             filename=filename,
-            folder="/users_profiles/",
+            folder="users_profiles/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} профилей в MinIO")
@@ -142,7 +142,7 @@ def gen_user_settings(**context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=settings,
             filename=filename,
-            folder="/users_settings/",
+            folder="users_settings/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} настроек в MinIO")
@@ -192,7 +192,7 @@ def gen_user_privacy(**context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=privacies,
             filename=filename,
-            folder="/users_privacy/",
+            folder="users_privacy/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} настроек приватности в MinIO")
@@ -239,7 +239,7 @@ def gen_user_status(**context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=statuses,
             filename=filename,
-            folder="/users_status/",
+            folder="users_status/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} статусов в MinIO")

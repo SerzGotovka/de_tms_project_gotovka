@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from enum import Enum
+from uuid import UUID
 
 
 # ==================== ENUMS ====================
@@ -27,9 +28,9 @@ class BlockReason(str, Enum):
 class Friend(BaseModel):
     """Модель дружбы"""
 
-    id: str = Field(..., description="Уникальный идентификатор дружбы")
-    user_id: str = Field(..., description="ID пользователя")
-    friend_id: str = Field(..., description="ID друга")
+    id: UUID = Field(..., description="Уникальный идентификатор дружбы")
+    user_id: UUID = Field(..., description="ID пользователя")
+    friend_id: UUID = Field(..., description="ID друга")
     created_at: str = Field(..., description="Дата создания")
     status: FriendStatus = Field(..., description="Статус дружбы")
     is_best_friend: bool = Field(..., description="Лучший ли друг")
@@ -50,9 +51,9 @@ class Friend(BaseModel):
 class Follower(BaseModel):
     """Модель подписчика"""
 
-    id: str = Field(..., description="Уникальный идентификатор подписки")
-    user_id: str = Field(..., description="ID пользователя")
-    follower_id: str = Field(..., description="ID подписчика")
+    id: UUID = Field(..., description="Уникальный идентификатор подписки")
+    user_id: UUID = Field(..., description="ID пользователя")
+    follower_id: UUID = Field(..., description="ID подписчика")
     followed_at: str = Field(..., description="Дата подписки")
     is_active: bool = Field(..., description="Активна ли подписка")
 
@@ -71,9 +72,9 @@ class Follower(BaseModel):
 class Subscription(BaseModel):
     """Модель подписки"""
 
-    id: str = Field(..., description="Уникальный идентификатор подписки")
-    user_id: str = Field(..., description="ID пользователя")
-    subscribed_to: str = Field(..., description="ID пользователя на которого подписан")
+    id: UUID = Field(..., description="Уникальный идентификатор подписки")
+    user_id: UUID = Field(..., description="ID пользователя")
+    subscribed_to: UUID = Field(..., description="ID пользователя на которого подписан")
     subscribed_at: str = Field(..., description="Дата подписки")
     is_active: bool = Field(..., description="Активна ли подписка")
 
@@ -92,9 +93,9 @@ class Subscription(BaseModel):
 class Block(BaseModel):
     """Модель блокировки"""
 
-    id: str = Field(..., description="Уникальный идентификатор блокировки")
-    user_id: str = Field(..., description="ID пользователя")
-    blocked_id: str = Field(..., description="ID заблокированного пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор блокировки")
+    user_id: UUID = Field(..., description="ID пользователя")
+    blocked_id: UUID = Field(..., description="ID заблокированного пользователя")
     blocked_at: str = Field(..., description="Дата блокировки")
     reason: BlockReason = Field(..., description="Причина блокировки")
     is_active: bool = Field(..., description="Активна ли блокировка")
@@ -115,9 +116,9 @@ class Block(BaseModel):
 class Mute(BaseModel):
     """Модель отключения уведомлений"""
 
-    id: str = Field(..., description="Уникальный идентификатор отключения")
-    user_id: str = Field(..., description="ID пользователя")
-    muted_id: str = Field(
+    id: UUID = Field(..., description="Уникальный идентификатор отключения")
+    user_id: UUID = Field(..., description="ID пользователя")
+    muted_id: UUID = Field(
         ..., description="ID пользователя от которого отключены уведомления"
     )
     muted_at: str = Field(..., description="Дата отключения")
@@ -142,9 +143,9 @@ class Mute(BaseModel):
 class CloseFriend(BaseModel):
     """Модель близкого друга"""
 
-    id: str = Field(..., description="Уникальный идентификатор близкого друга")
-    user_id: str = Field(..., description="ID пользователя")
-    close_friend_id: str = Field(..., description="ID близкого друга")
+    id: UUID = Field(..., description="Уникальный идентификатор близкого друга")
+    user_id: UUID = Field(..., description="ID пользователя")
+    close_friend_id: UUID = Field(..., description="ID близкого друга")
     added_at: str = Field(..., description="Дата добавления")
     is_active: bool = Field(..., description="Активен ли статус")
 

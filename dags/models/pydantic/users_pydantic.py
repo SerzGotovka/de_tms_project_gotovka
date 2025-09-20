@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
 from enum import Enum
+from uuid import UUID
 
 
 # ==================== ENUMS ====================
@@ -62,7 +63,7 @@ class UserStatus(str, Enum):
 class User(BaseModel):
     """Модель пользователя"""
 
-    id: str = Field(..., description="Уникальный идентификатор пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор пользователя")
     username: str = Field(..., description="Имя пользователя")
     email: str = Field(..., description="Email адрес")
     password_hash: str = Field(..., description="Хеш пароля")
@@ -89,8 +90,8 @@ class User(BaseModel):
 class UserProfile(BaseModel):
     """Модель профиля пользователя"""
 
-    id: str = Field(..., description="Уникальный идентификатор профиля")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор профиля")
+    user_id: UUID = Field(..., description="ID пользователя")
     first_name: str = Field(..., description="Имя")
     last_name: str = Field(..., description="Фамилия")
     bio: str = Field(..., description="Биография")
@@ -128,8 +129,8 @@ class UserProfile(BaseModel):
 class UserSettings(BaseModel):
     """Модель настроек пользователя"""
 
-    id: str = Field(..., description="Уникальный идентификатор настроек")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор настроек")
+    user_id: UUID = Field(..., description="ID пользователя")
     language: Language = Field(..., description="Язык интерфейса")
     timezone: Timezone = Field(..., description="Часовой пояс")
     theme: Theme = Field(..., description="Тема интерфейса")
@@ -163,8 +164,8 @@ class UserSettings(BaseModel):
 class UserPrivacy(BaseModel):
     """Модель настроек приватности пользователя"""
 
-    id: str = Field(..., description="Уникальный идентификатор настроек приватности")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор настроек приватности")
+    user_id: UUID = Field(..., description="ID пользователя")
     profile_visibility: PrivacyLevel = Field(..., description="Видимость профиля")
     posts_visibility: PrivacyLevel = Field(..., description="Видимость постов")
     friends_visibility: PrivacyLevel = Field(..., description="Видимость друзей")
@@ -202,8 +203,8 @@ class UserPrivacy(BaseModel):
 class UserStatusModel(BaseModel):
     """Модель статуса пользователя"""
 
-    id: str = Field(..., description="Уникальный идентификатор статуса")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор статуса")
+    user_id: UUID = Field(..., description="ID пользователя")
     status: UserStatus = Field(..., description="Статус пользователя")
     status_message: Optional[str] = Field(None, description="Сообщение статуса")
     last_seen: str = Field(..., description="Дата последнего посещения")

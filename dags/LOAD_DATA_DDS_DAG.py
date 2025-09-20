@@ -1,10 +1,24 @@
 import os
+import time
 from airflow.providers.postgres.operators.postgres import PostgresOperator  # type: ignore
 from airflow.operators.python import PythonOperator  # type: ignore
 from airflow import DAG  # type: ignore
 from datetime import datetime, timedelta
 import logging
-from utils.function_minio import load_from_raw_to_dds
+from utils.function_minio import (
+    load_from_raw_to_dds,
+    load_photos_from_minio_to_postgres,
+    load_videos_from_minio_to_postgres,
+    load_albums_from_minio_to_postgres,
+    load_posts_from_minio_to_postgres,
+    load_stories_from_minio_to_postgres,
+    load_reels_from_minio_to_postgres,
+    load_comments_from_minio_to_postgres,
+    load_replies_from_minio_to_postgres,
+    load_likes_from_minio_to_postgres,
+    load_reactions_from_minio_to_postgres,
+    load_shares_from_minio_to_postgres
+)
 from utils.load_to_neo_users import insert_users_to_neo4j
 from utils.load_to_neo_social import (
     load_friends_to_neo4j,
@@ -21,12 +35,6 @@ from models.pydantic.groups_pydantic import Community, Group, GroupMember, Commu
 from models.pydantic.pydantic_models import (
     Photo, Video, Album, Post, Story, Reel, Comment, Reply, Like, Reaction, Share
 )
-# from kafka_consumer import consume_l_available_topics
-# from kafka_consumer import kafka_consumer
-from cons import (
-    universal_insert_into_postgres, 
-    universal_kafka_consumer
-)
 
 
 logger = logging.getLogger(__name__)
@@ -34,13 +42,14 @@ logger = logging.getLogger(__name__)
 
 def build_dds_layer():
 
-    # Создание таблиц в dds слое (для users, content, groups, media)
+    # Создание таблиц в dds слое (для users, content, groups, media, social)
     SQL_DIR = os.path.join(os.path.dirname(__file__), "models", "sql", "dds")
     table_creation_order = [
         "users_tables",
         "content_tables",
         "groups_tables",
-        "media_tables",        
+        "media_tables",
+        "social_tables",        
     ]
 
     tasks = []
@@ -187,288 +196,100 @@ def load_pinned_posts_data():
     )
 
 
-# ==================== MEDIA DATA FUNCTIONS ====================
+# ==================== SOCIAL DATA FUNCTIONS ====================
 
-def insert_photo_data(data: Photo) -> bool:
-    """Вставка данных фотографии в PostgreSQL"""
-    return universal_insert_into_postgres(
-        data=data,
-        table_name="photos",
-        schema="dds",
-        check_dependency={"users": "user_id"},
-        insert_columns=["id", "user_id", "filename", "url", "description", "uploaded_at", "is_private"],
-        insert_values=[data.id, data.user_id, data.filename, data.url, data.description, data.uploaded_at, data.is_private]
+def load_friends_data():
+    """Загрузка данных дружеских связей из raw в DDS слой"""
+    from models.pydantic.social_pydantic import Friend
+    return load_from_raw_to_dds(
+        prefix="social_friends/",
+        table_name="friends",
+        pydantic_model_class=Friend,
+        bucket_name="data-bucket",
+        postgres_conn_id="my_postgres_conn",
+        update_existing=True
     )
 
 
-def insert_video_data(data: Video) -> bool:
-    """Вставка данных видео в PostgreSQL"""
-    return universal_insert_into_postgres(
-        data=data,
-        table_name="videos",
-        schema="dds",
-        check_dependency={"users": "user_id"},
-        insert_columns=["id", "user_id", "title", "url", "duration_seconds", "uploaded_at", "visibility"],
-        insert_values=[data.id, data.user_id, data.title, data.url, data.duration_seconds, data.uploaded_at, data.visibility.value]
+def load_followers_data():
+    """Загрузка данных подписчиков из raw в DDS слой"""
+    from models.pydantic.social_pydantic import Follower
+    return load_from_raw_to_dds(
+        prefix="social_followers/",
+        table_name="followers",
+        pydantic_model_class=Follower,
+        bucket_name="data-bucket",
+        postgres_conn_id="my_postgres_conn",
+        update_existing=True
     )
 
 
-def insert_album_data(data: Album) -> bool:
-    """Вставка данных альбома в PostgreSQL"""
-    return universal_insert_into_postgres(
-        data=data,
-        table_name="albums",
-        schema="dds",
-        check_dependency={"users": "user_id"},
-        insert_columns=["id", "user_id", "title", "description", "created_at", "media_ids"],
-        insert_values=[data.id, data.user_id, data.title, data.description, data.created_at, data.media_ids]
+def load_subscriptions_data():
+    """Загрузка данных подписок из raw в DDS слой"""
+    from models.pydantic.social_pydantic import Subscription
+    return load_from_raw_to_dds(
+        prefix="social_subscriptions/",
+        table_name="subscriptions",
+        pydantic_model_class=Subscription,
+        bucket_name="data-bucket",
+        postgres_conn_id="my_postgres_conn",
+        update_existing=True
     )
 
 
-def consume_photos_from_kafka() -> int:
-    """Потребление фотографий из Kafka"""
-    return universal_kafka_consumer(
-        topics="media_photos",
-        group_id="photos_consumer_group",
-        data_model=Photo,
-        insert_function=insert_photo_data,
-        max_runtime=300,
-        max_messages=100
+def load_blocks_data():
+    """Загрузка данных блокировок из raw в DDS слой"""
+    from models.pydantic.social_pydantic import Block
+    return load_from_raw_to_dds(
+        prefix="social_blocks/",
+        table_name="blocks",
+        pydantic_model_class=Block,
+        bucket_name="data-bucket",
+        postgres_conn_id="my_postgres_conn",
+        update_existing=True
     )
 
 
-def consume_videos_from_kafka() -> int:
-    """Потребление видео из Kafka"""
-    return universal_kafka_consumer(
-        topics="media_videos",
-        group_id="videos_consumer_group",
-        data_model=Video,
-        insert_function=insert_video_data,
-        max_runtime=300,
-        max_messages=100
+def load_mutes_data():
+    """Загрузка данных отключенных уведомлений из raw в DDS слой"""
+    from models.pydantic.social_pydantic import Mute
+    return load_from_raw_to_dds(
+        prefix="social_mutes/",
+        table_name="mutes",
+        pydantic_model_class=Mute,
+        bucket_name="data-bucket",
+        postgres_conn_id="my_postgres_conn",
+        update_existing=True
     )
 
 
-def consume_albums_from_kafka() -> int:
-    """Потребление альбомов из Kafka"""
-    return universal_kafka_consumer(
-        topics="media_albums",
-        group_id="albums_consumer_group",
-        data_model=Album,
-        insert_function=insert_album_data,
-        max_runtime=300,
-        max_messages=100
-    )
-
-
-# ==================== CONTENT DATA FUNCTIONS ====================
-
-def insert_post_data(data: Post) -> bool:
-    """Вставка данных поста в PostgreSQL"""
-    return universal_insert_into_postgres(
-        data=data,
-        table_name="posts",
-        schema="dds",
-        check_dependency={"users": "author_id"},
-        insert_columns=["id", "author_id", "caption", "image_url", "location", "created_at"],
-        insert_values=[data.id, data.author_id, data.caption, data.image_url, data.location, data.created_at]
-    )
-
-
-def insert_story_data(data: Story) -> bool:
-    """Вставка данных истории в PostgreSQL"""
-    return universal_insert_into_postgres(
-        data=data,
-        table_name="stories",
-        schema="dds",
-        check_dependency={"users": "user_id"},
-        insert_columns=["id", "user_id", "image_url", "caption", "expires_at"],
-        insert_values=[data.id, data.user_id, data.image_url, data.caption, data.expires_at]
-    )
-
-
-def insert_reel_data(data: Reel) -> bool:
-    """Вставка данных Reels в PostgreSQL"""
-    return universal_insert_into_postgres(
-        data=data,
-        table_name="reels",
-        schema="dds",
-        check_dependency={"users": "user_id"},
-        insert_columns=["id", "user_id", "video_url", "caption", "music", "created_at"],
-        insert_values=[data.id, data.user_id, data.video_url, data.caption, data.music, data.created_at]
-    )
-
-
-def insert_comment_data(data: Comment) -> bool:
-    """Вставка данных комментария в PostgreSQL"""
-    return universal_insert_into_postgres(
-        data=data,
-        table_name="comments",
-        schema="dds",
-        check_dependency={"users": "user_id", "posts": "post_id"},
-        insert_columns=["id", "post_id", "user_id", "text", "created_at"],
-        insert_values=[data.id, data.post_id, data.user_id, data.text, data.created_at]
-    )
-
-
-def insert_reply_data(data: Reply) -> bool:
-    """Вставка данных ответа на комментарий в PostgreSQL"""
-    return universal_insert_into_postgres(
-        data=data,
-        table_name="replies",
-        schema="dds",
-        check_dependency={"users": "user_id", "comments": "comment_id"},
-        insert_columns=["id", "comment_id", "user_id", "text", "created_at"],
-        insert_values=[data.id, data.comment_id, data.user_id, data.text, data.created_at]
-    )
-
-
-def insert_like_data(data: Like) -> bool:
-    """Вставка данных лайка в PostgreSQL"""
-    return universal_insert_into_postgres(
-        data=data,
-        table_name="likes",
-        schema="dds",
-        check_dependency={"users": "user_id", "posts": "post_id"},
-        insert_columns=["id", "post_id", "user_id", "created_at"],
-        insert_values=[data.id, data.post_id, data.user_id, data.created_at]
-    )
-
-
-def insert_reaction_data(data: Reaction) -> bool:
-    """Вставка данных реакции в PostgreSQL"""
-    return universal_insert_into_postgres(
-        data=data,
-        table_name="reactions",
-        schema="dds",
-        check_dependency={"users": "user_id", "posts": "post_id"},
-        insert_columns=["id", "post_id", "user_id", "type", "created_at"],
-        insert_values=[data.id, data.post_id, data.user_id, data.type.value, data.created_at]
-    )
-
-
-def insert_share_data(data: Share) -> bool:
-    """Вставка данных репоста в PostgreSQL"""
-    return universal_insert_into_postgres(
-        data=data,
-        table_name="shares",
-        schema="dds",
-        check_dependency={"users": "user_id", "posts": "post_id"},
-        insert_columns=["id", "post_id", "user_id", "created_at"],
-        insert_values=[data.id, data.post_id, data.user_id, data.created_at]
-    )
-
-
-def consume_posts_from_kafka() -> int:
-    """Потребление постов из Kafka"""
-    return universal_kafka_consumer(
-        topics="content_posts",
-        group_id="posts_consumer_group",
-        data_model=Post,
-        insert_function=insert_post_data,
-        max_runtime=300,
-        max_messages=100
-    )
-
-
-def consume_stories_from_kafka() -> int:
-    """Потребление историй из Kafka"""
-    return universal_kafka_consumer(
-        topics="content_stories",
-        group_id="stories_consumer_group",
-        data_model=Story,
-        insert_function=insert_story_data,
-        max_runtime=300,
-        max_messages=100
-    )
-
-
-def consume_reels_from_kafka() -> int:
-    """Потребление Reels из Kafka"""
-    return universal_kafka_consumer(
-        topics="content_reels",
-        group_id="reels_consumer_group",
-        data_model=Reel,
-        insert_function=insert_reel_data,
-        max_runtime=300,
-        max_messages=100
-    )
-
-
-def consume_comments_from_kafka() -> int:
-    """Потребление комментариев из Kafka"""
-    return universal_kafka_consumer(
-        topics="content_comments",
-        group_id="comments_consumer_group",
-        data_model=Comment,
-        insert_function=insert_comment_data,
-        max_runtime=300,
-        max_messages=100
-    )
-
-
-def consume_replies_from_kafka() -> int:
-    """Потребление ответов на комментарии из Kafka"""
-    return universal_kafka_consumer(
-        topics="content_replies",
-        group_id="replies_consumer_group",
-        data_model=Reply,
-        insert_function=insert_reply_data,
-        max_runtime=300,
-        max_messages=100
-    )
-
-
-def consume_likes_from_kafka() -> int:
-    """Потребление лайков из Kafka"""
-    return universal_kafka_consumer(
-        topics="content_likes",
-        group_id="likes_consumer_group",
-        data_model=Like,
-        insert_function=insert_like_data,
-        max_runtime=300,
-        max_messages=100
-    )
-
-
-def consume_reactions_from_kafka() -> int:
-    """Потребление реакций из Kafka"""
-    return universal_kafka_consumer(
-        topics="content_reactions",
-        group_id="reactions_consumer_group",
-        data_model=Reaction,
-        insert_function=insert_reaction_data,
-        max_runtime=300,
-        max_messages=100
-    )
-
-
-def consume_shares_from_kafka() -> int:
-    """Потребление репостов из Kafka"""
-    return universal_kafka_consumer(
-        topics="content_shares",
-        group_id="shares_consumer_group",
-        data_model=Share,
-        insert_function=insert_share_data,
-        max_runtime=300,
-        max_messages=100
+def load_close_friends_data():
+    """Загрузка данных близких друзей из raw в DDS слой"""
+    from models.pydantic.social_pydantic import CloseFriend
+    return load_from_raw_to_dds(
+        prefix="social_close_friends/",
+        table_name="close_friends",
+        pydantic_model_class=CloseFriend,
+        bucket_name="data-bucket",
+        postgres_conn_id="my_postgres_conn",
+        update_existing=True
     )
 
 
 default_args = {
     "retries": 3,  # попробовать 3 раза при неудаче
-    "retry_delay": timedelta(minutes=60),
-    "schedule_interval": "@daily",
-    "start_date": datetime(2025, 8, 4),
-    "catchup": False,
-    "max_active_runs": 1,
+    "retry_delay": timedelta(minutes=60)    
 }
 
 with DAG(
     dag_id="load_from_raw_to_dds",
-    tags=["dds", "postgres", "NEO4J", "from_minio", "from_kafka"],
-    description="Даг для загрузки данных из MinIO и kafka в dds слой PostgreSQL и Neo4j",
+    tags=["dds", "postgres", "NEO4J", "from_minio"],
+    description="Даг для загрузки данных из MinIO в dds слой PostgreSQL и Neo4j",
     default_args=default_args,
+    schedule_interval='*/3 * * * *',  # Запуск каждые  3 минуты для непрерывной обработки
+    start_date=datetime(2025, 8, 4),
+    catchup=False,
+    max_active_runs=3  # Разрешить до 3 параллельных запусков для консюмеров
 ) as dag:
     # Создание таблиц DDS слоя
     dds_tables_tasks = build_dds_layer()
@@ -497,6 +318,39 @@ with DAG(
     load_user_status_task = PythonOperator(
         task_id="load_user_status_data",
         python_callable=load_user_status_data,
+    )
+
+    # ==================== SOCIAL DATA LOADING TASKS ====================
+    
+    # Загрузка социальных данных из MinIO в DDS слой
+    load_friends_data_task = PythonOperator(
+        task_id="load_friends_data",
+        python_callable=load_friends_data,
+    )
+
+    load_followers_data_task = PythonOperator(
+        task_id="load_followers_data",
+        python_callable=load_followers_data,
+    )
+
+    load_subscriptions_data_task = PythonOperator(
+        task_id="load_subscriptions_data",
+        python_callable=load_subscriptions_data,
+    )
+
+    load_blocks_data_task = PythonOperator(
+        task_id="load_blocks_data",
+        python_callable=load_blocks_data,
+    )
+
+    load_mutes_data_task = PythonOperator(
+        task_id="load_mutes_data",
+        python_callable=load_mutes_data,
+    )
+
+    load_close_friends_data_task = PythonOperator(
+        task_id="load_close_friends_data",
+        python_callable=load_close_friends_data,
     )
 
     # Загрузка пользователей в Neo4j
@@ -583,64 +437,65 @@ with DAG(
         python_callable=load_pinned_posts_data,
     )
 
-    # ==================== MEDIA KAFKA CONSUMER TASKS ====================
+    # ==================== MEDIA MINIO LOAD TASKS ====================
     
-    consume_photos_task = PythonOperator(
-        task_id="consume_photos_from_kafka",
-        python_callable=consume_photos_from_kafka,
+    load_photos_from_minio_task = PythonOperator(
+        task_id="load_photos_from_minio",
+        python_callable=load_photos_from_minio_to_postgres,
     )
 
-    consume_videos_task = PythonOperator(
-        task_id="consume_videos_from_kafka",
-        python_callable=consume_videos_from_kafka,
+    load_videos_from_minio_task = PythonOperator(
+        task_id="load_videos_from_minio",
+        python_callable=load_videos_from_minio_to_postgres,
     )
 
-    consume_albums_task = PythonOperator(
-        task_id="consume_albums_from_kafka",
-        python_callable=consume_albums_from_kafka,
+    load_albums_from_minio_task = PythonOperator(
+        task_id="load_albums_from_minio",
+        python_callable=load_albums_from_minio_to_postgres,
     )
 
-    # ==================== CONTENT KAFKA CONSUMER TASKS ====================
+    # ==================== CONTENT MINIO LOAD TASKS ====================
     
-    consume_posts_task = PythonOperator(
-        task_id="consume_posts_from_kafka",
-        python_callable=consume_posts_from_kafka,
+    load_posts_from_minio_task = PythonOperator(
+        task_id="load_posts_from_minio",
+        python_callable=load_posts_from_minio_to_postgres,
     )
 
-    consume_stories_task = PythonOperator(
-        task_id="consume_stories_from_kafka",
-        python_callable=consume_stories_from_kafka,
+    load_stories_from_minio_task = PythonOperator(
+        task_id="load_stories_from_minio",
+        python_callable=load_stories_from_minio_to_postgres,
     )
 
-    consume_reels_task = PythonOperator(
-        task_id="consume_reels_from_kafka",
-        python_callable=consume_reels_from_kafka,
+    load_reels_from_minio_task = PythonOperator(
+        task_id="load_reels_from_minio",
+        python_callable=load_reels_from_minio_to_postgres,
     )
 
-    consume_comments_task = PythonOperator(
-        task_id="consume_comments_from_kafka",
-        python_callable=consume_comments_from_kafka,
+    load_comments_from_minio_task = PythonOperator(
+        task_id="load_comments_from_minio",
+        python_callable=load_comments_from_minio_to_postgres,
     )
 
-    consume_replies_task = PythonOperator(
-        task_id="consume_replies_from_kafka",
-        python_callable=consume_replies_from_kafka,
+    load_replies_from_minio_task = PythonOperator(
+        task_id="load_replies_from_minio",
+        python_callable=load_replies_from_minio_to_postgres,
     )
 
-    consume_likes_task = PythonOperator(
-        task_id="consume_likes_from_kafka",
-        python_callable=consume_likes_from_kafka,
+    load_likes_from_minio_task = PythonOperator(
+        task_id="load_likes_from_minio",
+        python_callable=load_likes_from_minio_to_postgres,
     )
 
-    consume_reactions_task = PythonOperator(
-        task_id="consume_reactions_from_kafka",
-        python_callable=consume_reactions_from_kafka,
+    load_reactions_from_minio_task = PythonOperator(
+        task_id="load_reactions_from_minio",
+        python_callable=load_reactions_from_minio_to_postgres,
     )
 
-    consume_shares_task = PythonOperator(
-        task_id="consume_shares_from_kafka",
-        python_callable=consume_shares_from_kafka,
+    load_shares_from_minio_task = PythonOperator(
+        task_id="load_shares_from_minio",
+        python_callable=load_shares_from_minio_to_postgres,
     )
+
 
     # Установка зависимостей
     # Сначала создаем таблицы, затем загружаем данные
@@ -654,10 +509,20 @@ with DAG(
         load_user_status_task,
     ]
     
+    # Загрузка социальных данных после загрузки пользователей
+    load_users_task >> [
+        load_friends_data_task,
+        load_followers_data_task,
+        load_subscriptions_data_task,
+        load_blocks_data_task,
+        load_mutes_data_task,
+        load_close_friends_data_task,
+    ]
+    
     # Загрузка пользователей в Neo4j после загрузки в PostgreSQL
     load_users_task >> load_users_to_neo4j_task
     
-    # Загрузка социальных связей в Neo4j после загрузки пользователей в Neo4j
+    # Загрузка социальных связей в Neo4j после загрузки пользователей в Neo4j и социальных данных в DDS
     load_users_to_neo4j_task >> [
         load_friends_to_neo4j_task,
         load_followers_to_neo4j_task,
@@ -667,6 +532,14 @@ with DAG(
         load_close_friends_to_neo4j_task,
         load_all_social_relationships_to_neo4j_task,
     ]
+    
+    # Социальные данные в Neo4j зависят от загрузки социальных данных в DDS
+    load_friends_data_task >> load_friends_to_neo4j_task
+    load_followers_data_task >> load_followers_to_neo4j_task
+    load_subscriptions_data_task >> load_subscriptions_to_neo4j_task
+    load_blocks_data_task >> load_blocks_to_neo4j_task
+    load_mutes_data_task >> load_mutes_to_neo4j_task
+    load_close_friends_data_task >> load_close_friends_to_neo4j_task
     
     # Группы и сообщества загружаются параллельно после users
     load_users_task >> [
@@ -681,30 +554,30 @@ with DAG(
         load_pinned_posts_task,
     ]
 
-    # ==================== DEPENDENCIES ====================
-    
-    # Media Kafka consumers зависят от загрузки пользователей
+    # Media данные из MinIO зависят от загрузки пользователей
     load_users_task >> [
-        consume_photos_task,
-        consume_videos_task,
-        consume_albums_task,
+        load_photos_from_minio_task,
+        load_videos_from_minio_task,
+        load_albums_from_minio_task,
     ]
-    
-    # Content Kafka consumers зависят от загрузки пользователей
+
+    # Content данные из MinIO зависят от загрузки пользователей
     load_users_task >> [
-        consume_posts_task,
-        consume_stories_task,
-        consume_reels_task,
+        load_posts_from_minio_task,
+        load_stories_from_minio_task,
+        load_reels_from_minio_task,
     ]
-    
+
     # Комментарии и взаимодействия зависят от постов
-    consume_posts_task >> [
-        consume_comments_task,
-        consume_likes_task,
-        consume_reactions_task,
-        consume_shares_task,
+    load_posts_from_minio_task >> [
+        load_comments_from_minio_task,
+        load_likes_from_minio_task,
+        load_reactions_from_minio_task,
+        load_shares_from_minio_task,
     ]
-    
+
     # Ответы на комментарии зависят от комментариев
-    consume_comments_task >> consume_replies_task
+    load_comments_from_minio_task >> load_replies_from_minio_task
+
+    # ==================== DEPENDENCIES ====================
     

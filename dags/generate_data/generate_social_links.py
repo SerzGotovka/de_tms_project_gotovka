@@ -46,7 +46,7 @@ def generate_friends(max_friends=3, **context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=friends,
             filename=filename,
-            folder="/social_friends/",
+            folder="social_friends/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} дружеских связей в MinIO")
@@ -93,7 +93,7 @@ def generate_followers(max_followers=3, **context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=followers,
             filename=filename,
-            folder="/social_followers/",
+            folder="social_followers/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} подписчиков в MinIO")
@@ -140,7 +140,7 @@ def generate_subscriptions(max_subscriptions=3, **context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=subscriptions,
             filename=filename,
-            folder="/social_subscriptions/",
+            folder="social_subscriptions/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} подписок в MinIO")
@@ -190,7 +190,7 @@ def generate_blocks(max_blocks=2, **context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=blocks,
             filename=filename,
-            folder="/social_blocks/",
+            folder="social_blocks/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} блокировок в MinIO")
@@ -241,7 +241,7 @@ def generate_mutes(max_mutes=2, **context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=mutes,
             filename=filename,
-            folder="/social_mutes/",
+            folder="social_mutes/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} отключенных уведомлений в MinIO")
@@ -280,7 +280,7 @@ def generate_close_friends(**context) -> List[Dict]:
         record_count = save_data_directly_to_minio(
             data=close_friends,
             filename=filename,
-            folder="/social_close_friends/",
+            folder="social_close_friends/",
             bucket_name="data-bucket"
         )
         logging.info(f"✅ Записано {record_count} близких друзей в MinIO")

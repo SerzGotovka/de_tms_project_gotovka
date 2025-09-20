@@ -3,8 +3,9 @@ from faker import Faker
 import uuid
 from typing import List, Dict, Any
 import logging
+from datetime import datetime
 
-# from utils.function_kafka import PHOTOS_TOPIC, send_to_kafka
+from utils.function_minio import save_data_directly_to_minio
 
 fake = Faker()
 
@@ -32,10 +33,22 @@ def generate_photos(num_photos: int = 10, users: List[Dict[str, Any]] = None, **
         }
         photos.append(photo)
         
-        # Исправлено: отправляем каждое фото в Kafka
-        # send_to_kafka(PHOTOS_TOPIC, photo['id'], str(photo))
 
     logging.info(f"Сгенерировано фото: {len(photos)}")
+
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_photos_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=photos,
+            filename=filename,
+            folder="photos/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} фотографий в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи фотографий в MinIO: {e}")
+        raise
 
     context["task_instance"].xcom_push(key="photos", value=photos)
     context["task_instance"].xcom_push(key="number_photos", value=len(photos))
@@ -67,6 +80,20 @@ def generate_videos(num_videos: int = 5, users: List[Dict[str, Any]] = None, **c
         )
     number_videos = len(videos)
     logging.info(f"Сгенерировано видео: {len(videos)}")
+
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_videos_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=videos,
+            filename=filename,
+            folder="videos/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} видео в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи видео в MinIO: {e}")
+        raise
 
     context["task_instance"].xcom_push(key="videos", value=videos)
     context["task_instance"].xcom_push(key="number_videos", value=number_videos)
@@ -107,6 +134,20 @@ def generate_albums(num_albums: int = 3, users: List[Dict[str, Any]] = None, pho
         )
     number_albums = len(albums)
     logging.info(f"Сгенерировано альбомов: {len(albums)}")
+
+    # Записываем данные напрямую в MinIO
+    try:
+        filename = f'data_albums_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        record_count = save_data_directly_to_minio(
+            data=albums,
+            filename=filename,
+            folder="albums/",
+            bucket_name="data-bucket"
+        )
+        logging.info(f"✅ Записано {record_count} альбомов в MinIO")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при записи альбомов в MinIO: {e}")
+        raise
 
     context["task_instance"].xcom_push(key="albums", value=albums)
     context["task_instance"].xcom_push(key="number_albums", value=number_albums)

@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field
-from typing import List
+from pydantic import BaseModel, Field, field_validator, model_validator
+from typing import List, Union
 from datetime import datetime
 from enum import Enum
+from uuid import UUID
 from .users_pydantic import (
     User,
     UserProfile,
@@ -52,17 +53,43 @@ class MediaVisibility(str, Enum):
 class Post(BaseModel):
     """Модель поста"""
 
-    id: int = Field(..., description="Уникальный идентификатор поста")
-    author_id: str = Field(..., description="ID автора поста")
+    id: UUID = Field(..., description="Уникальный идентификатор поста")
+    author_id: UUID = Field(..., description="ID автора поста")
     caption: str = Field(..., description="Подпись к посту")
     image_url: str = Field(..., description="URL изображения")
     location: str = Field(..., description="Местоположение")
     created_at: str = Field(..., description="Дата создания")
 
+    @field_validator('id', 'author_id', mode='before')
+    @classmethod
+    def convert_to_uuid(cls, v):
+        """Преобразует различные типы данных в UUID"""
+        if isinstance(v, UUID):
+            return v
+        if isinstance(v, str):
+            try:
+                return UUID(v)
+            except ValueError:
+                return UUID()
+        if isinstance(v, (int, float)):
+            return UUID()
+        return v
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_and_convert_ids(cls, values):
+        """Валидация и преобразование ID полей перед основной валидацией"""
+        if isinstance(values, dict):
+            # Преобразуем ID поля если они являются числами
+            for field in ['id', 'author_id']:
+                if field in values and isinstance(values[field], (int, float)):
+                    values[field] = str(UUID())
+        return values
+
     class Config:
         json_schema_extra = {
             "example": {
-                "id": 1,
+                "id": "123e4567-e89b-12d3-a456-426614174000",
                 "author_id": "123e4567-e89b-12d3-a456-426614174000",
                 "caption": "Beautiful sunset today!",
                 "image_url": "https://example.com/sunset.jpg",
@@ -75,16 +102,42 @@ class Post(BaseModel):
 class Story(BaseModel):
     """Модель истории"""
 
-    id: int = Field(..., description="Уникальный идентификатор истории")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор истории")
+    user_id: UUID = Field(..., description="ID пользователя")
     image_url: str = Field(..., description="URL изображения")
     caption: str = Field(..., description="Подпись к истории")
     expires_at: str = Field(..., description="Дата истечения")
 
+    @field_validator('id', 'user_id', mode='before')
+    @classmethod
+    def convert_to_uuid(cls, v):
+        """Преобразует различные типы данных в UUID"""
+        if isinstance(v, UUID):
+            return v
+        if isinstance(v, str):
+            try:
+                return UUID(v)
+            except ValueError:
+                return UUID()
+        if isinstance(v, (int, float)):
+            return UUID()
+        return v
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_and_convert_ids(cls, values):
+        """Валидация и преобразование ID полей перед основной валидацией"""
+        if isinstance(values, dict):
+            # Преобразуем ID поля если они являются числами
+            for field in ['id', 'user_id']:
+                if field in values and isinstance(values[field], (int, float)):
+                    values[field] = str(UUID())
+        return values
+
     class Config:
         json_schema_extra = {
             "example": {
-                "id": 1,
+                "id": "123e4567-e89b-12d3-a456-426614174001",
                 "user_id": "123e4567-e89b-12d3-a456-426614174000",
                 "image_url": "https://example.com/story.jpg",
                 "caption": "Quick update!",
@@ -96,17 +149,43 @@ class Story(BaseModel):
 class Reel(BaseModel):
     """Модель Reels"""
 
-    id: int = Field(..., description="Уникальный идентификатор Reels")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор Reels")
+    user_id: UUID = Field(..., description="ID пользователя")
     video_url: str = Field(..., description="URL видео")
     caption: str = Field(..., description="Подпись к Reels")
     music: str = Field(..., description="Музыка")
     created_at: str = Field(..., description="Дата создания")
 
+    @field_validator('id', 'user_id', mode='before')
+    @classmethod
+    def convert_to_uuid(cls, v):
+        """Преобразует различные типы данных в UUID"""
+        if isinstance(v, UUID):
+            return v
+        if isinstance(v, str):
+            try:
+                return UUID(v)
+            except ValueError:
+                return UUID()
+        if isinstance(v, (int, float)):
+            return UUID()
+        return v
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_and_convert_ids(cls, values):
+        """Валидация и преобразование ID полей перед основной валидацией"""
+        if isinstance(values, dict):
+            # Преобразуем ID поля если они являются числами
+            for field in ['id', 'user_id']:
+                if field in values and isinstance(values[field], (int, float)):
+                    values[field] = str(UUID())
+        return values
+
     class Config:
         json_schema_extra = {
             "example": {
-                "id": 1,
+                "id": "123e4567-e89b-12d3-a456-426614174002",
                 "user_id": "123e4567-e89b-12d3-a456-426614174000",
                 "video_url": "https://example.com/video.mp4",
                 "caption": "Dancing to my favorite song!",
@@ -119,17 +198,45 @@ class Reel(BaseModel):
 class Comment(BaseModel):
     """Модель комментария"""
 
-    id: int = Field(..., description="Уникальный идентификатор комментария")
-    post_id: int = Field(..., description="ID поста")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор комментария")
+    post_id: UUID = Field(..., description="ID поста")
+    user_id: UUID = Field(..., description="ID пользователя")
     text: str = Field(..., description="Текст комментария")
     created_at: str = Field(..., description="Дата создания")
+
+    @field_validator('id', 'post_id', 'user_id', mode='before')
+    @classmethod
+    def convert_to_uuid(cls, v):
+        """Преобразует различные типы данных в UUID"""
+        if isinstance(v, UUID):
+            return v
+        if isinstance(v, str):
+            try:
+                return UUID(v)
+            except ValueError:
+                # Если строка не является валидным UUID, генерируем новый
+                return UUID()
+        if isinstance(v, (int, float)):
+            # Если это число, генерируем UUID на основе числа
+            return UUID()
+        return v
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_and_convert_ids(cls, values):
+        """Валидация и преобразование ID полей перед основной валидацией"""
+        if isinstance(values, dict):
+            # Преобразуем ID поля если они являются числами
+            for field in ['id', 'post_id', 'user_id']:
+                if field in values and isinstance(values[field], (int, float)):
+                    values[field] = str(UUID())
+        return values
 
     class Config:
         json_schema_extra = {
             "example": {
-                "id": 1,
-                "post_id": 1,
+                "id": "123e4567-e89b-12d3-a456-426614174003",
+                "post_id": "123e4567-e89b-12d3-a456-426614174000",
                 "user_id": "123e4567-e89b-12d3-a456-426614174000",
                 "text": "Amazing photo!",
                 "created_at": "2024.01.15 18:35",
@@ -140,17 +247,43 @@ class Comment(BaseModel):
 class Reply(BaseModel):
     """Модель ответа на комментарий"""
 
-    id: int = Field(..., description="Уникальный идентификатор ответа")
-    comment_id: int = Field(..., description="ID комментария")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор ответа")
+    comment_id: UUID = Field(..., description="ID комментария")
+    user_id: UUID = Field(..., description="ID пользователя")
     text: str = Field(..., description="Текст ответа")
     created_at: str = Field(..., description="Дата создания")
+
+    @field_validator('id', 'comment_id', 'user_id', mode='before')
+    @classmethod
+    def convert_to_uuid(cls, v):
+        """Преобразует различные типы данных в UUID"""
+        if isinstance(v, UUID):
+            return v
+        if isinstance(v, str):
+            try:
+                return UUID(v)
+            except ValueError:
+                return UUID()
+        if isinstance(v, (int, float)):
+            return UUID()
+        return v
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_and_convert_ids(cls, values):
+        """Валидация и преобразование ID полей перед основной валидацией"""
+        if isinstance(values, dict):
+            # Преобразуем ID поля если они являются числами
+            for field in ['id', 'comment_id', 'user_id']:
+                if field in values and isinstance(values[field], (int, float)):
+                    values[field] = str(UUID())
+        return values
 
     class Config:
         json_schema_extra = {
             "example": {
-                "id": 1,
-                "comment_id": 1,
+                "id": "123e4567-e89b-12d3-a456-426614174004",
+                "comment_id": "123e4567-e89b-12d3-a456-426614174003",
                 "user_id": "123e4567-e89b-12d3-a456-426614174000",
                 "text": "Thank you!",
                 "created_at": "2024.01.15 18:40",
@@ -161,16 +294,42 @@ class Reply(BaseModel):
 class Like(BaseModel):
     """Модель лайка"""
 
-    id: int = Field(..., description="Уникальный идентификатор лайка")
-    post_id: int = Field(..., description="ID поста")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор лайка")
+    post_id: UUID = Field(..., description="ID поста")
+    user_id: UUID = Field(..., description="ID пользователя")
     created_at: str = Field(..., description="Дата создания")
+
+    @field_validator('id', 'post_id', 'user_id', mode='before')
+    @classmethod
+    def convert_to_uuid(cls, v):
+        """Преобразует различные типы данных в UUID"""
+        if isinstance(v, UUID):
+            return v
+        if isinstance(v, str):
+            try:
+                return UUID(v)
+            except ValueError:
+                return UUID()
+        if isinstance(v, (int, float)):
+            return UUID()
+        return v
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_and_convert_ids(cls, values):
+        """Валидация и преобразование ID полей перед основной валидацией"""
+        if isinstance(values, dict):
+            # Преобразуем ID поля если они являются числами
+            for field in ['id', 'post_id', 'user_id']:
+                if field in values and isinstance(values[field], (int, float)):
+                    values[field] = str(UUID())
+        return values
 
     class Config:
         json_schema_extra = {
             "example": {
-                "id": 1,
-                "post_id": 1,
+                "id": "123e4567-e89b-12d3-a456-426614174005",
+                "post_id": "123e4567-e89b-12d3-a456-426614174000",
                 "user_id": "123e4567-e89b-12d3-a456-426614174000",
                 "created_at": "2024.01.15 18:35",
             }
@@ -180,17 +339,43 @@ class Like(BaseModel):
 class Reaction(BaseModel):
     """Модель реакции"""
 
-    id: int = Field(..., description="Уникальный идентификатор реакции")
-    post_id: int = Field(..., description="ID поста")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор реакции")
+    post_id: UUID = Field(..., description="ID поста")
+    user_id: UUID = Field(..., description="ID пользователя")
     type: ReactionType = Field(..., description="Тип реакции")
     created_at: str = Field(..., description="Дата создания")
+
+    @field_validator('id', 'post_id', 'user_id', mode='before')
+    @classmethod
+    def convert_to_uuid(cls, v):
+        """Преобразует различные типы данных в UUID"""
+        if isinstance(v, UUID):
+            return v
+        if isinstance(v, str):
+            try:
+                return UUID(v)
+            except ValueError:
+                return UUID()
+        if isinstance(v, (int, float)):
+            return UUID()
+        return v
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_and_convert_ids(cls, values):
+        """Валидация и преобразование ID полей перед основной валидацией"""
+        if isinstance(values, dict):
+            # Преобразуем ID поля если они являются числами
+            for field in ['id', 'post_id', 'user_id']:
+                if field in values and isinstance(values[field], (int, float)):
+                    values[field] = str(UUID())
+        return values
 
     class Config:
         json_schema_extra = {
             "example": {
-                "id": 1,
-                "post_id": 1,
+                "id": "123e4567-e89b-12d3-a456-426614174006",
+                "post_id": "123e4567-e89b-12d3-a456-426614174000",
                 "user_id": "123e4567-e89b-12d3-a456-426614174000",
                 "type": "love",
                 "created_at": "2024.01.15 18:35",
@@ -201,16 +386,42 @@ class Reaction(BaseModel):
 class Share(BaseModel):
     """Модель репоста"""
 
-    id: int = Field(..., description="Уникальный идентификатор репоста")
-    post_id: int = Field(..., description="ID поста")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор репоста")
+    post_id: UUID = Field(..., description="ID поста")
+    user_id: UUID = Field(..., description="ID пользователя")
     created_at: str = Field(..., description="Дата создания")
+
+    @field_validator('id', 'post_id', 'user_id', mode='before')
+    @classmethod
+    def convert_to_uuid(cls, v):
+        """Преобразует различные типы данных в UUID"""
+        if isinstance(v, UUID):
+            return v
+        if isinstance(v, str):
+            try:
+                return UUID(v)
+            except ValueError:
+                return UUID()
+        if isinstance(v, (int, float)):
+            return UUID()
+        return v
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_and_convert_ids(cls, values):
+        """Валидация и преобразование ID полей перед основной валидацией"""
+        if isinstance(values, dict):
+            # Преобразуем ID поля если они являются числами
+            for field in ['id', 'post_id', 'user_id']:
+                if field in values and isinstance(values[field], (int, float)):
+                    values[field] = str(UUID())
+        return values
 
     class Config:
         json_schema_extra = {
             "example": {
-                "id": 1,
-                "post_id": 1,
+                "id": "123e4567-e89b-12d3-a456-426614174007",
+                "post_id": "123e4567-e89b-12d3-a456-426614174000",
                 "user_id": "123e4567-e89b-12d3-a456-426614174000",
                 "created_at": "2024.01.15 18:35",
             }
@@ -223,13 +434,39 @@ class Share(BaseModel):
 class Photo(BaseModel):
     """Модель фотографии"""
 
-    id: str = Field(..., description="Уникальный идентификатор фотографии")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор фотографии")
+    user_id: UUID = Field(..., description="ID пользователя")
     filename: str = Field(..., description="Имя файла")
     url: str = Field(..., description="URL фотографии")
     description: str = Field(..., description="Описание фотографии")
     uploaded_at: datetime = Field(..., description="Дата загрузки")
     is_private: bool = Field(..., description="Приватная ли фотография")
+
+    @field_validator('id', 'user_id', mode='before')
+    @classmethod
+    def convert_to_uuid(cls, v):
+        """Преобразует различные типы данных в UUID"""
+        if isinstance(v, UUID):
+            return v
+        if isinstance(v, str):
+            try:
+                return UUID(v)
+            except ValueError:
+                return UUID()
+        if isinstance(v, (int, float)):
+            return UUID()
+        return v
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_and_convert_ids(cls, values):
+        """Валидация и преобразование ID полей перед основной валидацией"""
+        if isinstance(values, dict):
+            # Преобразуем ID поля если они являются числами
+            for field in ['id', 'user_id']:
+                if field in values and isinstance(values[field], (int, float)):
+                    values[field] = str(UUID())
+        return values
 
     class Config:
         json_schema_extra = {
@@ -248,13 +485,39 @@ class Photo(BaseModel):
 class Video(BaseModel):
     """Модель видео"""
 
-    id: str = Field(..., description="Уникальный идентификатор видео")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор видео")
+    user_id: UUID = Field(..., description="ID пользователя")
     title: str = Field(..., description="Название видео")
     url: str = Field(..., description="URL видео")
     duration_seconds: int = Field(..., description="Длительность в секундах")
     uploaded_at: datetime = Field(..., description="Дата загрузки")
     visibility: MediaVisibility = Field(..., description="Видимость видео")
+
+    @field_validator('id', 'user_id', mode='before')
+    @classmethod
+    def convert_to_uuid(cls, v):
+        """Преобразует различные типы данных в UUID"""
+        if isinstance(v, UUID):
+            return v
+        if isinstance(v, str):
+            try:
+                return UUID(v)
+            except ValueError:
+                return UUID()
+        if isinstance(v, (int, float)):
+            return UUID()
+        return v
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_and_convert_ids(cls, values):
+        """Валидация и преобразование ID полей перед основной валидацией"""
+        if isinstance(values, dict):
+            # Преобразуем ID поля если они являются числами
+            for field in ['id', 'user_id']:
+                if field in values and isinstance(values[field], (int, float)):
+                    values[field] = str(UUID())
+        return values
 
     class Config:
         json_schema_extra = {
@@ -273,12 +536,59 @@ class Video(BaseModel):
 class Album(BaseModel):
     """Модель альбома"""
 
-    id: str = Field(..., description="Уникальный идентификатор альбома")
-    user_id: str = Field(..., description="ID пользователя")
+    id: UUID = Field(..., description="Уникальный идентификатор альбома")
+    user_id: UUID = Field(..., description="ID пользователя")
     title: str = Field(..., description="Название альбома")
     description: str = Field(..., description="Описание альбома")
     created_at: datetime = Field(..., description="Дата создания")
-    media_ids: List[str] = Field(..., description="Список ID медиафайлов")
+    media_ids: List[UUID] = Field(..., description="Список ID медиафайлов")
+
+    @field_validator('id', 'user_id', mode='before')
+    @classmethod
+    def convert_to_uuid(cls, v):
+        """Преобразует различные типы данных в UUID"""
+        if isinstance(v, UUID):
+            return v
+        if isinstance(v, str):
+            try:
+                return UUID(v)
+            except ValueError:
+                return UUID()
+        if isinstance(v, (int, float)):
+            return UUID()
+        return v
+
+    @field_validator('media_ids', mode='before')
+    @classmethod
+    def convert_media_ids_to_uuid(cls, v):
+        """Преобразует список ID медиафайлов в UUID"""
+        if not isinstance(v, list):
+            return v
+        result = []
+        for item in v:
+            if isinstance(item, UUID):
+                result.append(item)
+            elif isinstance(item, str):
+                try:
+                    result.append(UUID(item))
+                except ValueError:
+                    result.append(UUID())
+            elif isinstance(item, (int, float)):
+                result.append(UUID())
+            else:
+                result.append(item)
+        return result
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_and_convert_ids(cls, values):
+        """Валидация и преобразование ID полей перед основной валидацией"""
+        if isinstance(values, dict):
+            # Преобразуем ID поля если они являются числами
+            for field in ['id', 'user_id']:
+                if field in values and isinstance(values[field], (int, float)):
+                    values[field] = str(UUID())
+        return values
 
     class Config:
         json_schema_extra = {
